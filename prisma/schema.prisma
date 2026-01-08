@@ -1,0 +1,630 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                   Int                   @id @default(autoincrement())
+  username             String                @unique @db.VarChar(50)
+  email                String                @unique @db.VarChar(255)
+  passwordHash         String                @map("password_hash") @db.VarChar(255)
+  name                 String                @db.VarChar(100)
+  isActive             Boolean               @default(true) @map("is_active")
+  languagePreference   Language              @default(EN) @map("language_preference")
+  themePreference      String?               @default("glass-blue") @map("theme_preference") @db.VarChar(50)
+  roleId               Int                   @map("role_id")
+  createdAt            DateTime              @default(now()) @map("created_at")
+  updatedAt            DateTime              @updatedAt @map("updated_at")
+  companiesInCharge    Company[]             @relation("CompanyUserInCharge")
+  complaintResponses   ComplaintDetail[]     @relation("ComplaintResponder")
+  inquiryResponses     Inquiry[]             @relation("InquiryResponder")
+  createdInteractions  InteractionRecord[]   @relation("InteractionCreator")
+  interactionsInCharge InteractionRecord[]   @relation("InteractionUserInCharge")
+  managedProperties    Property[]            @relation("PropertyManager")
+  staffRecords         Staff[]               @relation("UserStaff")
+  staffInCharge        Staff[]               @relation("StaffUserInCharge")
+  systemConfigs        SystemConfiguration[]
+  sessions             UserSession[]
+  replies              MessageReply[]
+  mobileUsers          MobileUser[]
+  role                 UserRole              @relation(fields: [roleId], references: [id])
+
+  @@index([roleId])
+  @@map("users")
+}
+
+model UserRole {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique @db.VarChar(50)
+  description String?  @db.Text
+  level       Int      @default(1)
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  users       User[]
+
+  @@index([level])
+  @@map("user_roles")
+}
+
+model Staff {
+  id                                    Int                       @id @default(autoincrement())
+  userId                                Int?                      @map("user_id")
+  employeeId                            String?                   @unique @map("employee_id") @db.VarChar(50)
+  name                                  String                    @db.VarChar(100)
+  position                              String?                   @db.VarChar(100)
+  department                            String?                   @db.VarChar(100)
+  email                                 String?                   @db.VarChar(255)
+  phone                                 String?                   @db.VarChar(20)
+  postalCode                            String?                   @map("postal_code") @db.VarChar(10)
+  address                               String?                   @db.Text
+  hireDate                              DateTime?                 @map("hire_date") @db.Date
+  salary                                Decimal?                  @db.Decimal(10, 2)
+  status                                staff_status              @default(ACTIVE)
+  residenceStatus                       String?                   @map("residence_status") @db.VarChar(100)
+  age                                   Int?
+  nationality                           String?                   @db.VarChar(100)
+  userInChargeId                        Int?                      @map("user_in_charge_id")
+  companiesId                           Int?                      @map("companies_id")
+  dateOfBirth                           DateTime?                 @map("date_of_birth") @db.Date
+  educationName                         Json?                     @map("education_name")
+  educationType                         Json?                     @map("education_type")
+  emergencyContactPrimaryEmail          String?                   @map("emergency_contact_primary_email") @db.VarChar(255)
+  emergencyContactPrimaryName           String?                   @map("emergency_contact_primary_name") @db.VarChar(255)
+  emergencyContactPrimaryNumber         String?                   @map("emergency_contact_primary_number") @db.VarChar(20)
+  emergencyContactPrimaryRelationship   String?                   @map("emergency_contact_primary_relationship") @db.VarChar(100)
+  emergencyContactSecondaryEmail        String?                   @map("emergency_contact_secondary_email") @db.VarChar(255)
+  emergencyContactSecondaryName         String?                   @map("emergency_contact_secondary_name") @db.VarChar(255)
+  emergencyContactSecondaryNumber       String?                   @map("emergency_contact_secondary_number") @db.VarChar(20)
+  emergencyContactSecondaryRelationship String?                   @map("emergency_contact_secondary_relationship") @db.VarChar(100)
+  familyChildren                        Int?                      @map("family_children")
+  familySpouse                          Boolean?                  @map("family_spouse")
+  fax                                   String?                   @db.VarChar(20)
+  furiganaName                          String?                   @map("furigana_name") @db.VarChar(255)
+  gender                                Gender?
+  hobbyAndInterests                     String?                   @map("hobby_and_interests") @db.Text
+  japaneseProficiency                   String?                   @map("japanese_proficiency") @db.Text
+  japaneseProficiencyRemarks            String?                   @map("japanese_proficiency_remarks") @db.Text
+  mobile                                String?                   @db.VarChar(20)
+  motivationToComeJapan                 String?                   @map("motivation_to_come_japan") @db.Text
+  periodOfStayDateEnd                   DateTime?                 @map("period_of_stay_date_end") @db.Date
+  periodOfStayDateStart                 DateTime?                 @map("period_of_stay_date_start") @db.Date
+  photo                                 String?                   @db.VarChar(500)
+  qualificationsAndLicenses             String?                   @map("qualifications_and_licenses") @db.Text
+  reasonForApplying                     String?                   @map("reason_for_applying") @db.Text
+  remarks                               String?                   @db.Text
+  workHistoryCityLocation               Json?                     @map("work_history_city_location")
+  workHistoryCountryLocation            Json?                     @map("work_history_country_location")
+  workHistoryDateEnd                    Json?                     @map("work_history_date_end")
+  workHistoryDateStart                  Json?                     @map("work_history_date_start")
+  workHistoryDescription                Json?                     @map("work_history_description")
+  workHistoryEmploymentType             Json?                     @map("work_history_employment_type")
+  workHistoryName                       Json?                     @map("work_history_name")
+  workHistoryPosition                   Json?                     @map("work_history_position")
+  createdAt                             DateTime                  @default(now()) @map("created_at")
+  updatedAt                             DateTime                  @updatedAt @map("updated_at")
+  attendanceRecords                     AttendanceRecord[]
+  complaintRecords                      ComplaintDetail[]         @relation("ComplaintRecorder")
+  dailyRecords                          DailyRecord[]             @relation("DailyRecordStaff")
+  documents                             Document[]                @relation("StaffDocuments")
+  inquiryRecords                        Inquiry[]                 @relation("InquiryRecorder")
+  interactionsInvolved                  InteractionRecord[]       @relation("InteractionPersonInvolved")
+  assignments                           PropertyStaffAssignment[]
+  mobileUsers                           MobileUser[]
+  company                               Company?                  @relation("StaffCompany", fields: [companiesId], references: [id])
+  user                                  User?                     @relation("UserStaff", fields: [userId], references: [id])
+  userInCharge                          User?                     @relation("StaffUserInCharge", fields: [userInChargeId], references: [id])
+
+  @@index([employeeId])
+  @@index([status])
+  @@index([userId], map: "staff_user_id_fkey")
+  @@index([userInChargeId])
+  @@index([companiesId])
+  @@index([status, department])
+  @@index([status, userId])
+  @@map("staff")
+}
+
+model Property {
+  id                Int                       @id @default(autoincrement())
+  propertyCode      String?                   @unique @map("property_code") @db.VarChar(50)
+  name              String                    @db.VarChar(255)
+  postalCode        String?                   @map("postal_code") @db.VarChar(10)
+  address           String                    @db.Text
+  propertyType      PropertyType              @map("property_type")
+  managerId         Int?                      @map("manager_id")
+  status            PropertyStatus            @default(ACTIVE)
+  description       String?                   @db.Text
+  contractDate      DateTime?                 @map("contract_date") @db.Date
+  city              String?                   @db.VarChar(100)
+  country           String?                   @db.VarChar(100)
+  establishmentDate DateTime?                 @map("establishment_date") @db.Date
+  furiganaName      String?                   @map("furigana_name") @db.VarChar(255)
+  owner             String?                   @db.VarChar(255)
+  ownerEmail        String?                   @map("owner_email") @db.VarChar(255)
+  ownerFax          String?                   @map("owner_fax") @db.VarChar(20)
+  ownerPhone        String?                   @map("owner_phone") @db.VarChar(20)
+  photo             String?                   @db.VarChar(500)
+  prefecture        String?                   @db.VarChar(100)
+  region            String?                   @db.VarChar(100)
+  createdAt         DateTime                  @default(now()) @map("created_at")
+  updatedAt         DateTime                  @updatedAt @map("updated_at")
+  documents         Document[]                @relation("PropertyDocuments")
+  manager           User?                     @relation("PropertyManager", fields: [managerId], references: [id])
+  staffAssignments  PropertyStaffAssignment[]
+
+  @@index([propertyCode])
+  @@index([status])
+  @@index([managerId], map: "properties_manager_id_fkey")
+  @@index([status, propertyType])
+  @@index([status, managerId])
+  @@map("properties")
+}
+
+model PropertyStaffAssignment {
+  id            Int       @id @default(autoincrement())
+  propertyId    Int       @map("property_id")
+  staffId       Int       @map("staff_id")
+  room          String    @db.VarChar(100)
+  startDate     DateTime  @map("start_date") @db.Date
+  endDate       DateTime? @map("end_date") @db.Date
+  isActive      Boolean   @default(true) @map("is_active")
+  rentPriceHigh Decimal?  @map("rent_price_high") @db.Decimal(10, 2)
+  rentPriceLow  Decimal?  @map("rent_price_low") @db.Decimal(10, 2)
+  createdAt     DateTime  @default(now()) @map("created_at")
+  property      Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  staff         Staff     @relation(fields: [staffId], references: [id], onDelete: Cascade)
+
+  @@unique([propertyId, staffId, startDate])
+  @@index([propertyId])
+  @@index([staffId])
+  @@map("property_staff_assignments")
+}
+
+model SystemConfiguration {
+  id          Int            @id @default(autoincrement())
+  key         String         @unique @db.VarChar(100)
+  value       String         @db.Text
+  description String?        @db.Text
+  category    String         @db.VarChar(50)
+  dataType    ConfigDataType @default(STRING) @map("data_type")
+  isActive    Boolean        @default(true) @map("is_active")
+  createdBy   Int            @map("created_by")
+  createdAt   DateTime       @default(now()) @map("created_at")
+  updatedAt   DateTime       @updatedAt @map("updated_at")
+  creator     User           @relation(fields: [createdBy], references: [id])
+
+  @@index([category])
+  @@index([isActive])
+  @@index([createdBy], map: "system_configurations_created_by_fkey")
+  @@index([category, isActive])
+  @@index([isActive, dataType])
+  @@map("system_configurations")
+}
+
+model UserSession {
+  id         Int      @id @default(autoincrement())
+  userId     Int      @map("user_id")
+  tokenHash  String   @map("token_hash") @db.VarChar(255)
+  deviceInfo String?  @map("device_info") @db.Text
+  ipAddress  String?  @map("ip_address") @db.VarChar(45)
+  expiresAt  DateTime @map("expires_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([tokenHash])
+  @@index([expiresAt])
+  @@map("user_sessions")
+}
+
+model AttendanceRecord {
+  id           Int              @id @default(autoincrement())
+  staffId      Int              @map("staff_id")
+  date         DateTime         @db.Date
+  checkInTime  DateTime?        @map("check_in_time")
+  checkOutTime DateTime?        @map("check_out_time")
+  status       AttendanceStatus
+  notes        String?          @db.Text
+  hoursWorked  Decimal?         @map("hours_worked") @db.Decimal(4, 2)
+  createdBy    String           @map("created_by") @db.VarChar(100)
+  createdAt    DateTime         @default(now()) @map("created_at")
+  updatedAt    DateTime         @updatedAt @map("updated_at")
+  staff        Staff            @relation(fields: [staffId], references: [id], onDelete: Cascade)
+
+  @@unique([staffId, date])
+  @@index([staffId])
+  @@index([date])
+  @@index([status])
+  @@index([staffId, date])
+  @@index([date, status])
+  @@map("attendance_records")
+}
+
+model InteractionRecord {
+  id                    Int                @id @default(autoincrement())
+  type                  InteractionType
+  date                  DateTime           @db.Date
+  description           String             @db.Text
+  status                InteractionStatus?
+  name                  String?            @db.VarChar(255)
+  title                 String?            @db.VarChar(255)
+  personInvolvedStaffId Int?               @map("person_involved_staff_id")
+  userInChargeId        Int?               @map("user_in_charge_id")
+  personConcerned       String?            @map("person_concerned") @db.VarChar(100)
+  location              String?            @db.Text
+  means                 InteractionMeans?
+  responseDetails       String?            @map("response_details") @db.Text
+  companiesId           Int?               @map("companies_id")
+  repliesIdArray        Json?              @map("replies_id_array")
+  createdBy             Int?               @map("created_by")
+  createdAt             DateTime           @default(now()) @map("created_at")
+  updatedAt             DateTime           @updatedAt @map("updated_at")
+  company               Company?           @relation("CompanyInteractions", fields: [companiesId], references: [id])
+  creator               User?              @relation("InteractionCreator", fields: [createdBy], references: [id])
+  personInvolved        Staff?             @relation("InteractionPersonInvolved", fields: [personInvolvedStaffId], references: [id])
+  userInCharge          User?              @relation("InteractionUserInCharge", fields: [userInChargeId], references: [id])
+
+  @@index([type])
+  @@index([status])
+  @@index([date])
+  @@index([personInvolvedStaffId])
+  @@index([userInChargeId])
+  @@index([createdBy])
+  @@index([companiesId])
+  @@index([type, status])
+  @@index([date, type])
+  @@map("interaction_records")
+}
+
+model Company {
+  id                             Int                 @id @default(autoincrement())
+  companyId                      String?             @unique(map: "companies_company_id_unique") @map("company_id") @db.VarChar(50)
+  name                           String              @db.VarChar(255)
+  postalCode                     String?             @map("postal_code") @db.VarChar(10)
+  address                        String              @db.Text
+  phone                          String?             @db.VarChar(20)
+  email                          String?             @db.VarChar(255)
+  website                        String?             @db.VarChar(255)
+  industry                       String?             @db.VarChar(100)
+  description                    String?             @db.Text
+  status                         CompanyStatus       @default(ACTIVE)
+  contactPerson                  String?             @map("contact_person") @db.VarChar(255)
+  hiringVacancies                Int?                @default(0) @map("hiring_vacancies")
+  preferredNationality           String?             @map("preferred_nationality") @db.VarChar(100)
+  city                           String?             @db.VarChar(100)
+  corporateNumber                String?             @map("corporate_number") @db.VarChar(20)
+  country                        String?             @db.VarChar(100)
+  destinationAverageAge          String?             @map("destination_average_age") @db.VarChar(100)
+  destinationTransfer            String?             @map("destination_transfer") @db.VarChar(255)
+  destinationWorkEnvironment     String?             @map("destination_work_environment") @db.VarChar(255)
+  destinationWorkPlace           String?             @map("destination_work_place") @db.VarChar(255)
+  establishmentDate              DateTime?           @map("establishment_date") @db.Date
+  furiganaName                   String?             @map("furigana_name") @db.VarChar(255)
+  jobAllowances                  String?             @map("job_allowances") @db.VarChar(255)
+  jobContractRenewalConditions   String?             @map("job_contract_renewal_conditions") @db.VarChar(255)
+  jobDisputePreventionMeasures   String?             @map("job_dispute_prevention_measures") @db.VarChar(255)
+  jobEmployeeBenefits            String?             @map("job_employee_benefits") @db.VarChar(255)
+  jobOvertimeRate                String?             @map("job_overtime_rate") @db.VarChar(100)
+  jobPastRecruitmentHistory      String?             @map("job_past_recruitment_history") @db.VarChar(255)
+  jobProvisionalHiringConditions String?             @map("job_provisional_hiring_conditions") @db.VarChar(255)
+  jobRetirementBenefits          String?             @map("job_retirement_benefits") @db.VarChar(255)
+  jobRetirementConditions        String?             @map("job_retirement_conditions") @db.VarChar(255)
+  jobSalary                      String?             @map("job_salary") @db.VarChar(100)
+  jobSalaryBonus                 String?             @map("job_salary_bonus") @db.VarChar(255)
+  jobSalaryIncreaseRate          String?             @map("job_salary_increase_rate") @db.VarChar(255)
+  jobSelectionProcess            String?             @map("job_selection_process") @db.VarChar(255)
+  jobTermsAndConditions          String?             @map("job_terms_and_conditions") @db.VarChar(255)
+  photo                          String?             @db.VarChar(500)
+  prefecture                     String?             @db.VarChar(100)
+  preferredAge                   String?             @map("preferred_age") @db.VarChar(100)
+  preferredEducation             String?             @map("preferred_education") @db.VarChar(255)
+  preferredExperience            String?             @map("preferred_experience") @db.VarChar(255)
+  preferredJapaneseProficiency   String?             @map("preferred_japanese_proficiency") @db.VarChar(100)
+  preferredPersonality           String?             @map("preferred_personality") @db.VarChar(255)
+  preferredQualifications        String?             @map("preferred_qualifications") @db.VarChar(255)
+  preferredStatusOfResidence     String?             @map("preferred_status_of_residence") @db.VarChar(100)
+  region                         String?             @db.VarChar(100)
+  userInChargeId                 Int?                @map("user_in_charge_id")
+  createdAt                      DateTime            @default(now()) @map("created_at")
+  updatedAt                      DateTime            @updatedAt @map("updated_at")
+  userInCharge                   User?               @relation("CompanyUserInCharge", fields: [userInChargeId], references: [id])
+  complaints                     ComplaintDetail[]   @relation("ComplaintCompany")
+  documents                      Document[]          @relation("CompanyDocuments")
+  inquiries                      Inquiry[]           @relation("InquiryCompany")
+  interactionRecords             InteractionRecord[] @relation("CompanyInteractions")
+  staff                          Staff[]             @relation("StaffCompany")
+
+  @@index([status])
+  @@index([userInChargeId])
+  @@index([companyId])
+  @@map("companies")
+}
+
+model Document {
+  id              Int            @id @default(autoincrement())
+  title           String         @db.VarChar(255)
+  type            DocumentType
+  relatedEntityId String         @map("related_entity_id") @db.VarChar(100)
+  filePath        String?        @map("file_path") @db.VarChar(500)
+  status          DocumentStatus @default(ACTIVE)
+  startDate       DateTime       @map("start_date") @db.Date
+  endDate         DateTime?      @map("end_date") @db.Date
+  staffId         Int?           @map("staff_id")
+  companiesId     Int?           @map("companies_id")
+  propertyId      Int?           @map("property_id")
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+  company         Company?       @relation("CompanyDocuments", fields: [companiesId], references: [id])
+  property        Property?      @relation("PropertyDocuments", fields: [propertyId], references: [id])
+  staff           Staff?         @relation("StaffDocuments", fields: [staffId], references: [id])
+
+  @@index([type])
+  @@index([status])
+  @@index([relatedEntityId])
+  @@index([staffId])
+  @@index([companiesId])
+  @@index([propertyId])
+  @@map("documents")
+}
+
+model ComplaintDetail {
+  id                Int             @id @default(autoincrement())
+  dateOfOccurrence  DateTime        @map("date_of_occurrence")
+  complainerName    String          @map("complainer_name") @db.VarChar(255)
+  complainerContact String          @map("complainer_contact") @db.VarChar(50)
+  personInvolved    String?         @map("person_involved") @db.VarChar(255)
+  progressStatus    ComplaintStatus @default(OPEN) @map("progress_status")
+  urgencyLevel      UrgencyLevel    @map("urgency_level")
+  complaintContent  String          @map("complaint_content") @db.Text
+  responderId       Int?            @map("responder_id")
+  companyId         Int?            @map("company_id")
+  recorderId        Int?            @map("recorder_id")
+  resolutionDate    DateTime?       @map("resolution_date")
+  repliesIdArray    Json?           @map("replies_id_array")
+  createdAt         DateTime        @default(now()) @map("created_at")
+  updatedAt         DateTime        @updatedAt @map("updated_at")
+  company           Company?        @relation("ComplaintCompany", fields: [companyId], references: [id])
+  recorder          Staff?          @relation("ComplaintRecorder", fields: [recorderId], references: [id], onDelete: Cascade)
+  responder         User?           @relation("ComplaintResponder", fields: [responderId], references: [id])
+
+  @@index([progressStatus])
+  @@index([dateOfOccurrence])
+  @@index([responderId])
+  @@index([companyId])
+  @@index([recorderId])
+  @@index([progressStatus, dateOfOccurrence])
+  @@index([companyId, progressStatus])
+  @@map("complaint_details")
+}
+
+model DailyRecord {
+  id              Int             @id @default(autoincrement())
+  dateOfRecord    DateTime        @map("date_of_record")
+  staffId         Int             @map("staff_id")
+  conditionStatus ConditionStatus @map("condition_status")
+  feedbackContent String          @map("feedback_content") @db.Text
+  contactNumber   String?         @map("contact_number") @db.Text
+  photo           String?         @db.VarChar(500)
+  repliesIdArray  Json?           @map("replies_id_array")
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
+  staff           Staff           @relation("DailyRecordStaff", fields: [staffId], references: [id], onDelete: Cascade)
+
+  @@index([dateOfRecord])
+  @@index([staffId])
+  @@map("daily_record")
+}
+
+model Inquiry {
+  id              Int           @id @default(autoincrement())
+  dateOfInquiry   DateTime      @map("date_of_inquiry")
+  inquirerName    String        @map("inquirer_name") @db.VarChar(255)
+  inquirerContact String        @map("inquirer_contact") @db.VarChar(50)
+  companyId       Int?          @map("company_id")
+  typeOfInquiry   String        @map("type_of_inquiry") @db.VarChar(255)
+  inquiryContent  String        @map("inquiry_content") @db.Text
+  progressStatus  InquiryStatus @default(OPEN) @map("progress_status")
+  responderId     Int?          @map("responder_id")
+  recorderId      Int?          @map("recorder_id")
+  resolutionDate  DateTime?     @map("resolution_date")
+  repliesIdArray  Json?         @map("replies_id_array")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+  company         Company?      @relation("InquiryCompany", fields: [companyId], references: [id])
+  recorder        Staff?        @relation("InquiryRecorder", fields: [recorderId], references: [id], onDelete: Cascade)
+  responder       User?         @relation("InquiryResponder", fields: [responderId], references: [id])
+
+  @@index([progressStatus])
+  @@index([dateOfInquiry])
+  @@index([companyId])
+  @@index([responderId])
+  @@index([recorderId])
+  @@index([progressStatus, dateOfInquiry])
+  @@index([companyId, progressStatus])
+  @@map("inquiries")
+}
+
+model MessageReply {
+  id           Int       @id @default(autoincrement())
+  toDatetime   DateTime? @map("to_datetime")
+  fromDatetime DateTime? @map("from_datetime")
+  toMessage    String?   @map("to_message") @db.Text
+  fromMessage  String?   @map("from_message") @db.Text
+  userId       Int?      @map("user_id")
+  isRead       Boolean   @default(false) @map("is_read")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isRead])
+  @@map("message_replies")
+}
+
+model MobileUserRole {
+  id    Int          @id @default(autoincrement())
+  name  String       @unique @db.VarChar(50)
+  level Int          @unique
+  users MobileUser[]
+
+  @@map("mobile_user_roles")
+}
+
+model MobileUser {
+  id            Int                  @id @default(autoincrement())
+  username      String               @unique @db.VarChar(50)
+  email         String               @unique @db.VarChar(255)
+  passwordHash  String               @map("password_hash") @db.VarChar(255)
+  displayName   String?              @map("display_name") @db.VarChar(100)
+  phone         String?              @db.VarChar(20)
+  isActive      Boolean              @default(true) @map("is_active")
+  mobileRoleId  Int?                 @map("mobile_role_id")
+  staffId       Int?                 @map("staff_id")
+  userId        Int?                 @map("user_id")
+  createdAt     DateTime             @default(now()) @map("created_at")
+  updatedAt     DateTime             @updatedAt @map("updated_at")
+  refreshTokens MobileRefreshToken[]
+  mobileRole    MobileUserRole?      @relation(fields: [mobileRoleId], references: [id])
+  staff         Staff?               @relation(fields: [staffId], references: [id])
+  user          User?                @relation(fields: [userId], references: [id])
+
+  @@index([mobileRoleId])
+  @@index([staffId])
+  @@index([userId])
+  @@map("mobile_users")
+}
+
+model MobileRefreshToken {
+  id        Int        @id @default(autoincrement())
+  userId    Int        @map("user_id")
+  tokenHash String     @map("token_hash") @db.VarChar(255)
+  deviceId  String?    @map("device_id") @db.VarChar(100)
+  userAgent String?    @map("user_agent") @db.VarChar(255)
+  ip        String?    @db.VarChar(45)
+  expiresAt DateTime   @map("expires_at")
+  revokedAt DateTime?  @map("revoked_at")
+  createdAt DateTime   @default(now()) @map("created_at")
+  user      MobileUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([tokenHash])
+  @@index([expiresAt])
+  @@map("mobile_refresh_tokens")
+}
+
+enum Language {
+  EN
+  JA
+}
+
+enum PropertyType {
+  RESIDENTIAL
+  COMMERCIAL
+  INDUSTRIAL
+  MIXED_USE
+}
+
+enum PropertyStatus {
+  ACTIVE
+  INACTIVE
+  UNDER_CONSTRUCTION
+  SOLD
+}
+
+enum ConfigDataType {
+  STRING
+  NUMBER
+  BOOLEAN
+  JSON
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+  HALF_DAY
+  SICK
+  VACATION
+}
+
+enum InteractionType {
+  DISCUSSION
+  INTERVIEW
+  CONSULTATION
+  OTHER
+}
+
+enum InteractionStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+}
+
+enum DocumentType {
+  STAFF
+  PROPERTY
+  COMPANY
+  MANUAL
+}
+
+enum DocumentStatus {
+  ACTIVE
+  EXPIRED
+  TERMINATED
+}
+
+enum CompanyStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum ComplaintStatus {
+  OPEN
+  CLOSED
+  ON_HOLD
+}
+
+enum InquiryStatus {
+  OPEN
+  CLOSED
+  ON_HOLD
+}
+
+enum UrgencyLevel {
+  High
+  Medium
+  Low
+}
+
+enum ConditionStatus {
+  Excellent
+  Good
+  Fair
+  Poor
+}
+
+enum InteractionMeans {
+  FACE_TO_FACE @map("Face-to-face")
+  ONLINE       @map("Online")
+  PHONE        @map("Phone")
+  EMAIL        @map("Email")
+}
+
+enum Gender {
+  M
+  F
+}
+
+enum staff_status {
+  ACTIVE
+  INACTIVE
+  ON_LEAVE
+  TERMINATED
+}

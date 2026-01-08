@@ -1,0 +1,19 @@
+{
+  "extends": "../../tsconfig.server.json",
+  "include": [
+    "./**/*",
+    "../shared/**/*",
+    "../../prisma/**/*",
+    "../../scripts/**/*"
+  ],
+  "exclude": [
+    "../client/**/*",
+    "../../node_modules",
+    "../../dist/client",
+    "**/__tests__/**/*",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx"
+  ]
+}
