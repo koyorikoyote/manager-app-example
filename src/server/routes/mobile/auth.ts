@@ -1,4 +1,5 @@
 import express from "express";
+import crypto from "crypto";
 import prisma from "../../lib/prisma";
 import {
   signMobileAccessToken,
@@ -12,7 +13,7 @@ const router = express.Router();
 /**
  * POST /api/mobile/auth/login
  * Body: { username: string (email), password: string, deviceInfo?: string }
- * Response: { success, data: { token, user, expiresAt } }
+ * Response: { success, data: { token, refreshToken, user, expiresAt } }
  */
 router.post("/login", async (req, res) => {
   try {
@@ -52,9 +53,9 @@ router.post("/login", async (req, res) => {
     // Resolve role from new mobile_user_roles (fallback to User/level 1)
     const roleRec = mobileUser.mobileRoleId
       ? await (prisma as any).mobileUserRole.findUnique({
-          where: { id: mobileUser.mobileRoleId },
-          select: { name: true, level: true },
-        })
+        where: { id: mobileUser.mobileRoleId },
+        select: { name: true, level: true },
+      })
       : null;
 
     const roleName = (roleRec?.name ?? "User").toLowerCase();
@@ -62,8 +63,8 @@ router.post("/login", async (req, res) => {
       roleName === "administrator"
         ? "admin"
         : roleName === "manager"
-        ? "supervisor"
-        : "user";
+          ? "supervisor"
+          : "user";
     const roleLevel = roleRec?.level ?? 1;
 
     const token = signMobileAccessToken({
@@ -83,11 +84,32 @@ router.post("/login", async (req, res) => {
     // 15 minutes default, keep in sync with ACCESS_EXPIRES_IN
     const expiresAt = toJSTISOString(new Date(Date.now() + 15 * 60 * 1000));
 
+    // Generate a secure refresh token (7 days expiry)
+    const refreshTokenPlain = crypto.randomBytes(40).toString("hex");
+    const refreshTokenHash = crypto
+      .createHash("sha256")
+      .update(refreshTokenPlain)
+      .digest("hex");
+
+    const refreshExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+    await (prisma as any).mobileRefreshToken.create({
+      data: {
+        userId: mobileUser.id,
+        tokenHash: refreshTokenHash,
+        deviceId: req.body.deviceInfo || null,
+        userAgent: req.headers["user-agent"] || null,
+        ip: req.ip || req.connection.remoteAddress || null,
+        expiresAt: refreshExpiresAt,
+      },
+    });
+
     return res.json({
       success: true,
       data: {
         success: true,
         token,
+        refreshToken: refreshTokenPlain,
         user: userPayload,
         expiresAt,
       },
@@ -97,11 +119,11 @@ router.post("/login", async (req, res) => {
     const isDev = process.env.NODE_ENV !== "production";
     const details = isDev
       ? {
-          message: err?.message,
-          code: err?.code,
-          name: err?.name,
-          stack: err?.stack,
-        }
+        message: err?.message,
+        code: err?.code,
+        name: err?.name,
+        stack: err?.stack,
+      }
       : undefined;
 
     return res.status(500).json({
@@ -114,34 +136,53 @@ router.post("/login", async (req, res) => {
 
 /**
  * POST /api/mobile/auth/refresh
- * Authorization: Bearer <token> (may be expired)
- * Response: { success, data: { token, user, expiresAt } }
- * Note: Minimal implementation re-issues a short-lived token based on the prior one.
+ * Body: { refreshToken: string }
+ * Response: { success, data: { token, refreshToken, user, expiresAt } }
  */
 router.post("/refresh", async (req, res) => {
   try {
-    const authHeader = req.headers["authorization"];
-    const token = authHeader && authHeader.split(" ")[1];
-    if (!token) {
+    const { refreshToken } = req.body;
+
+    if (!refreshToken) {
       return res
         .status(401)
-        .json({ success: false, error: "Access token required" });
+        .json({ success: false, error: "Refresh token required" });
     }
 
-    // Allow refresh with expired token
-    const decoded = verifyMobileToken(token, { ignoreExpiration: true });
+    const tokenHash = crypto
+      .createHash("sha256")
+      .update(refreshToken)
+      .digest("hex");
 
-    if (decoded.aud !== "mobile") {
-      return res
-        .status(403)
-        .json({ success: false, error: "Invalid token audience" });
-    }
-
-    const mobileUser = await (prisma as any).mobileUser.findFirst({
-      where: { id: decoded.sub, isActive: true },
+    const storedToken = await (prisma as any).mobileRefreshToken.findFirst({
+      where: {
+        tokenHash,
+        revokedAt: null,
+      },
+      include: {
+        user: true,
+      },
     });
 
-    if (!mobileUser) {
+    if (!storedToken) {
+      return res
+        .status(401)
+        .json({ success: false, error: "Invalid refresh token" });
+    }
+
+    if (new Date() > storedToken.expiresAt) {
+      // Clean up expired token
+      await (prisma as any).mobileRefreshToken.delete({
+        where: { id: storedToken.id },
+      });
+      return res
+        .status(401)
+        .json({ success: false, error: "Refresh token expired" });
+    }
+
+    const mobileUser = storedToken.user;
+
+    if (!mobileUser || !mobileUser.isActive) {
       return res
         .status(401)
         .json({ success: false, error: "User not found or inactive" });
@@ -150,9 +191,9 @@ router.post("/refresh", async (req, res) => {
     // Resolve role from new mobile_user_roles (fallback to User/level 1)
     const roleRec = mobileUser.mobileRoleId
       ? await (prisma as any).mobileUserRole.findUnique({
-          where: { id: mobileUser.mobileRoleId },
-          select: { name: true, level: true },
-        })
+        where: { id: mobileUser.mobileRoleId },
+        select: { name: true, level: true },
+      })
       : null;
 
     const roleName = (roleRec?.name ?? "User").toLowerCase();
@@ -160,8 +201,8 @@ router.post("/refresh", async (req, res) => {
       roleName === "administrator"
         ? "admin"
         : roleName === "manager"
-        ? "supervisor"
-        : "user";
+          ? "supervisor"
+          : "user";
     const roleLevel = roleRec?.level ?? 1;
 
     const newToken = signMobileAccessToken({
@@ -179,11 +220,36 @@ router.post("/refresh", async (req, res) => {
 
     const expiresAt = toJSTISOString(new Date(Date.now() + 15 * 60 * 1000));
 
+    // Rotate the refresh token: Delete old, create new
+    await (prisma as any).mobileRefreshToken.delete({
+      where: { id: storedToken.id },
+    });
+
+    const newRefreshTokenPlain = crypto.randomBytes(40).toString("hex");
+    const newRefreshTokenHash = crypto
+      .createHash("sha256")
+      .update(newRefreshTokenPlain)
+      .digest("hex");
+
+    const refreshExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+    await (prisma as any).mobileRefreshToken.create({
+      data: {
+        userId: mobileUser.id,
+        tokenHash: newRefreshTokenHash,
+        deviceId: req.body.deviceInfo || storedToken.deviceId,
+        userAgent: req.headers["user-agent"] || storedToken.userAgent,
+        ip: req.ip || req.connection.remoteAddress || storedToken.ip,
+        expiresAt: refreshExpiresAt,
+      },
+    });
+
     return res.json({
       success: true,
       data: {
         success: true,
         token: newToken,
+        refreshToken: newRefreshTokenPlain,
         user: userPayload,
         expiresAt,
       },
@@ -193,11 +259,11 @@ router.post("/refresh", async (req, res) => {
     const isDev = process.env.NODE_ENV !== "production";
     const details = isDev
       ? {
-          message: err?.message,
-          code: err?.code,
-          name: err?.name,
-          stack: err?.stack,
-        }
+        message: err?.message,
+        code: err?.code,
+        name: err?.name,
+        stack: err?.stack,
+      }
       : undefined;
 
     return res.status(401).json({
@@ -210,10 +276,25 @@ router.post("/refresh", async (req, res) => {
 
 /**
  * POST /api/mobile/auth/logout
- * Body: { token?: string }  // accepted but not required for this minimal implementation
+ * Body: { refreshToken?: string }
  */
-router.post("/logout", async (_req, res) => {
-  // Stateless access token logout – client will discard token.
+router.post("/logout", async (req, res) => {
+  const { refreshToken } = req.body;
+  if (refreshToken) {
+    try {
+      const tokenHash = crypto
+        .createHash("sha256")
+        .update(refreshToken)
+        .digest("hex");
+
+      await (prisma as any).mobileRefreshToken.deleteMany({
+        where: { tokenHash },
+      });
+    } catch (e) {
+      console.error("Failed to invalidate refresh token during logout", e);
+    }
+  }
+
   return res.json({ success: true, message: "Logged out" });
 });
 

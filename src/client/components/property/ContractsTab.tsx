@@ -29,7 +29,7 @@ const ContractsTabComponent: React.FC<ContractsTabProps> = ({
     property,
     isEditMode: _isEditMode,
 }) => {
-    const { t: _t } = useLanguage();
+    const { t } = useLanguage();
     const { isMobile } = useResponsive();
     const [contracts, setContracts] = useState<ContractRecord[]>([]);
     const [loading, setLoading] = useState(true);
@@ -86,13 +86,13 @@ const ContractsTabComponent: React.FC<ContractsTabProps> = ({
     // Fetch data on component mount with proper AbortController cleanup
     useEffect(() => {
         const controller = new AbortController();
-        
+
         const loadData = async () => {
             await fetchContracts(controller.signal);
         };
-        
+
         loadData();
-        
+
         return () => {
             controller.abort();
         };
@@ -100,29 +100,29 @@ const ContractsTabComponent: React.FC<ContractsTabProps> = ({
 
     // Memoized formatting functions
     const formatDocumentStatus = useMemo(() => (status: string): string => {
-        const statusMap: Record<string, string> = {
-            'ACTIVE': 'Active',
-            'EXPIRED': 'Expired',
-            'TERMINATED': 'Terminated',
-        };
-        return statusMap[status] || status;
-    }, []);
+        switch (status) {
+            case 'ACTIVE': return t('detailPages.accordionLabels.contracts.statusValues.ACTIVE');
+            case 'EXPIRED': return t('detailPages.accordionLabels.contracts.statusValues.EXPIRED');
+            case 'TERMINATED': return t('detailPages.accordionLabels.contracts.statusValues.TERMINATED');
+            default: return status;
+        }
+    }, [t]);
 
     const formatDocumentType = useMemo(() => (type: string): string => {
-        const typeMap: Record<string, string> = {
-            'STAFF': 'Staff Document',
-            'PROPERTY': 'Property Document',
-            'COMPANY': 'Company Document',
-        };
-        return typeMap[type] || type;
-    }, []);
+        switch (type) {
+            case 'STAFF': return t('detailPages.accordionLabels.contracts.typeValues.STAFF');
+            case 'PROPERTY': return t('detailPages.accordionLabels.contracts.typeValues.PROPERTY');
+            case 'COMPANY': return t('detailPages.accordionLabels.contracts.typeValues.COMPANY');
+            default: return type;
+        }
+    }, [t]);
 
     const formatContractPeriod = useMemo(() => (startDate: Date, endDate: Date | null): string => {
         const start = new Date(startDate).toLocaleDateString('ja-JP');
-        if (!endDate) return `${start} - Ongoing`;
+        if (!endDate) return `${start} - ${t('detailPages.accordionLabels.contracts.ongoing')}`;
         const end = new Date(endDate).toLocaleDateString('ja-JP');
         return `${start} - ${end}`;
-    }, []);
+    }, [t]);
 
     const getStatusColorClasses = useMemo(() => (status: string): string => {
         switch (status) {
@@ -212,11 +212,11 @@ const ContractsTabComponent: React.FC<ContractsTabProps> = ({
                 {/* Contract Information */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <span className="block text-sm font-medium text-gray-700 mb-1">{_t('detailPages.accordionLabels.contracts.documentType')}</span>
+                        <span className="block text-sm font-medium text-gray-700 mb-1">{t('detailPages.accordionLabels.contracts.documentType')}</span>
                         <span className="text-gray-900">{formattedType}</span>
                     </div>
                     <div>
-                        <span className="block text-sm font-medium text-gray-700 mb-1">{_t('detailPages.accordionLabels.contracts.status')}</span>
+                        <span className="block text-sm font-medium text-gray-700 mb-1">{t('detailPages.accordionLabels.contracts.status')}</span>
                         <span className={cn(
                             'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border',
                             getStatusColorClasses(contract.status)
@@ -225,26 +225,26 @@ const ContractsTabComponent: React.FC<ContractsTabProps> = ({
                         </span>
                     </div>
                     <div>
-                        <span className="block text-sm font-medium text-gray-700 mb-1">{_t('detailPages.accordionLabels.contracts.startDate')}</span>
+                        <span className="block text-sm font-medium text-gray-700 mb-1">{t('detailPages.accordionLabels.contracts.startDate')}</span>
                         <span className="text-gray-900">
                             {new Date(contract.startDate).toLocaleDateString('ja-JP')}
                         </span>
                     </div>
                     <div>
-                        <span className="block text-sm font-medium text-gray-700 mb-1">{_t('detailPages.accordionLabels.contracts.endDate')}</span>
+                        <span className="block text-sm font-medium text-gray-700 mb-1">{t('detailPages.accordionLabels.contracts.endDate')}</span>
                         <span className="text-gray-900">
                             {contract.endDate
                                 ? new Date(contract.endDate).toLocaleDateString('ja-JP')
-                                : _t('detailPages.accordionLabels.contracts.ongoing')
+                                : t('detailPages.accordionLabels.contracts.ongoing')
                             }
                         </span>
                     </div>
                     <div>
-                        <span className="block text-sm font-medium text-gray-700 mb-1">{_t('detailPages.accordionLabels.contracts.relatedEntityId')}</span>
+                        <span className="block text-sm font-medium text-gray-700 mb-1">{t('detailPages.accordionLabels.contracts.relatedEntityId')}</span>
                         <span className="text-gray-900 font-mono text-sm">{contract.relatedEntityId}</span>
                     </div>
                     <div>
-                        <span className="block text-sm font-medium text-gray-700 mb-1">{_t('detailPages.accordionLabels.contracts.lastUpdated')}</span>
+                        <span className="block text-sm font-medium text-gray-700 mb-1">{t('detailPages.accordionLabels.contracts.lastUpdated')}</span>
                         <span className="text-gray-900">
                             {new Date(contract.updatedAt).toLocaleDateString('ja-JP')}
                         </span>
@@ -253,7 +253,7 @@ const ContractsTabComponent: React.FC<ContractsTabProps> = ({
 
                 {/* File Information */}
                 <div className="pt-4 border-t border-gray-200">
-                    <span className="block text-sm font-medium text-gray-700 mb-2">{_t('detailPages.accordionLabels.contracts.fileAttachment')}</span>
+                    <span className="block text-sm font-medium text-gray-700 mb-2">{t('detailPages.accordionLabels.contracts.fileAttachment')}</span>
                     {hasFile ? (
                         <div className="flex items-center justify-between bg-gray-50 rounded-lg p-3">
                             <div className="flex items-center gap-3">
@@ -261,7 +261,7 @@ const ContractsTabComponent: React.FC<ContractsTabProps> = ({
                                 <div>
                                     <div className="font-medium text-gray-900">{contract.title}</div>
                                     <div className="text-sm text-gray-500">
-                                        {_t('detailPages.accordionLabels.contracts.fileAvailableForDownload')}
+                                        {t('detailPages.accordionLabels.contracts.fileAvailableForDownload')}
                                     </div>
                                 </div>
                             </div>
@@ -276,29 +276,29 @@ const ContractsTabComponent: React.FC<ContractsTabProps> = ({
                                 )}
                             >
                                 <Download className="h-4 w-4" />
-                                {_t('detailPages.accordionLabels.contracts.download')}
+                                {t('detailPages.accordionLabels.contracts.download')}
                             </button>
                         </div>
                     ) : (
                         <div className="flex items-center gap-3 text-gray-500 bg-gray-50 rounded-lg p-3">
                             <FileText className="h-5 w-5" />
-                            <span className="text-sm">{_t('detailPages.accordionLabels.contracts.noFileAttached')}</span>
+                            <span className="text-sm">{t('detailPages.accordionLabels.contracts.noFileAttached')}</span>
                         </div>
                     )}
                 </div>
             </div>
         );
-    }, [formatDocumentType, formatDocumentStatus, getStatusColorClasses, handleDownload]);
+    }, [formatDocumentType, formatDocumentStatus, getStatusColorClasses, handleDownload, t]);
 
     return (
         <div className="space-y-4">
             {/* Header */}
             <div className="flex items-center justify-between">
                 <h3 className="text-lg font-medium text-gray-900">
-                    {_t('detailPages.accordionLabels.contracts.contractDocuments')}
+                    {t('detailPages.accordionLabels.contracts.contractDocuments')}
                 </h3>
                 <div className="text-sm text-gray-500">
-                    {contracts.length} {contracts.length === 1 ? _t('detailPages.accordionLabels.contracts.document') : _t('detailPages.accordionLabels.contracts.documents')}
+                    {contracts.length} {contracts.length === 1 ? t('detailPages.accordionLabels.contracts.document') : t('detailPages.accordionLabels.contracts.documents')}
                 </div>
             </div>
 
@@ -310,7 +310,7 @@ const ContractsTabComponent: React.FC<ContractsTabProps> = ({
                 keyExtractor={(contract) => contract.id}
                 loading={loading}
                 error={error}
-                emptyMessage={_t('detailPages.accordionLabels.contracts.noContractDocuments')}
+                emptyMessage={t('detailPages.accordionLabels.contracts.noContractDocuments')}
                 className="space-y-2"
             />
         </div>

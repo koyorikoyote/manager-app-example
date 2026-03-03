@@ -8,7 +8,8 @@ module.exports = merge(common, {
     static: './dist/client',
     hot: true,
     port: 3000,
-    host: '127.0.0.1',
+    host: '0.0.0.0', // Allow external connections (required for emulators)
+    allowedHosts: 'all', // Disable host check
     historyApiFallback: true,
     proxy: [
       {

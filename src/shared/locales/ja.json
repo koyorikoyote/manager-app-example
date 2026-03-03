@@ -1809,18 +1809,33 @@
         "propertyName": "住居名",
         "propertyType": "建物種別",
         "propertyStatus": "空室状況",
+        "propertyCode": "住居コード",
+        "status": "ステータス",
         "address": "住所",
         "postalCode": "郵便番号",
         "country": "国",
         "region": "地域",
         "prefecture": "都道府県",
         "city": "市区町村",
-        "owner": "所有者",
+        "owner": "所有者名",
         "ownerPhone": "所有者電話",
         "ownerEmail": "所有者メール",
         "ownerFax": "所有者FAX",
         "contractDate": "契約日",
-        "description": "説明"
+        "description": "説明",
+        "personInCharge": "担当者"
+      },
+      "propertyTypeValues": {
+        "RESIDENTIAL": "住居",
+        "COMMERCIAL": "商業",
+        "INDUSTRIAL": "工業",
+        "MIXED_USE": "複合用途"
+      },
+      "propertyStatusValues": {
+        "ACTIVE": "利用中",
+        "INACTIVE": "未使用",
+        "UNDER_CONSTRUCTION": "工事中",
+        "SOLD": "売済み"
       }
     },
     "destination": {
@@ -1890,45 +1905,145 @@
     },
     "accordionLabels": {
       "dailyRecord": {
+        "title": "日報",
+        "recordCount_one": "{{count}}件",
+        "recordCount_other": "{{count}}件",
+        "emptyMessage": "このクルーの日報が見つかりません",
         "dateOfRecord": "記録日",
-        "conditionStatus": "健康状態",
+        "conditionStatus": "体調",
         "feedbackContent": "フィードバック内容",
-        "contactNumber": "電話番号",
+        "contactNumber": "連絡先",
         "createdAt": "作成日時",
         "updatedAt": "更新日時",
-        "noFeedbackProvided": "フィードバックなし"
+        "noFeedbackProvided": "フィードバックなし",
+        "conditionStatusValues": {
+          "Excellent": "非常に良い",
+          "Good": "良い",
+          "Fair": "普通",
+          "Poor": "不良",
+          "notSpecified": "未指定"
+        }
       },
       "interaction": {
+        "title": "やり取り記録",
+        "recordCount_one": "{{count}}件",
+        "recordCount_other": "{{count}}件",
+        "emptyMessage": "このクルーのやり取り記録が見つかりません",
         "date": "やり取り日",
-        "means": "手段",
+        "means": "連絡手段",
         "location": "場所",
-        "description": "説明",
+        "description": "内容",
         "type": "種別",
-        "status": "ステータス",
-        "noDescriptionProvided": "説明なし"
+        "status": "進捗",
+        "personConcerned": "関係者",
+        "responseDetails": "対応詳細",
+        "createdBy": "作成者",
+        "userInCharge": "担当者",
+        "createdAt": "作成日時",
+        "updatedAt": "更新日時",
+        "noDescriptionProvided": "内容なし",
+        "meansValues": {
+          "FACE_TO_FACE": "対面",
+          "ONLINE": "オンライン",
+          "PHONE": "電話",
+          "EMAIL": "メール",
+          "notSpecified": "未指定"
+        }
       },
       "procedures": {
+        "sectionTitle": "手続き・書類",
+        "documentCount_one": "{{count}}件",
+        "documentCount_other": "{{count}}件",
+        "emptyMessage": "このクルーの書類が見つかりません",
         "startDate": "開始日",
         "endDate": "終了日",
         "type": "種別",
         "status": "ステータス",
         "title": "タイトル",
         "filePath": "ファイルパス",
-        "noTitleProvided": "タイトルなし"
+        "download": "ダウンロード",
+        "relatedEntityId": "関連エンティティID",
+        "createdAt": "作成日時",
+        "updatedAt": "更新日時",
+        "noTitleProvided": "タイトルなし",
+        "typeValues": {
+          "STAFF": "スタッフ",
+          "PROPERTY": "住居",
+          "COMPANY": "事業者",
+          "notSpecified": "未指定"
+        },
+        "statusValues": {
+          "ACTIVE": "有効",
+          "EXPIRED": "期限切れ",
+          "TERMINATED": "終了",
+          "notSpecified": "未指定"
+        }
+      },
+      "companyInteraction": {
+        "interactionRecords": "やり取り記録",
+        "record": "件",
+        "records": "件",
+        "noInteractionRecords": "この会社のやり取り記録が見つかりません",
+        "date": "やり取り日",
+        "means": "連絡手段",
+        "location": "場所",
+        "description": "内容",
+        "noDescriptionProvided": "内容なし",
+        "notSpecified": "未指定",
+        "meansValues": {
+          "FACE_TO_FACE": "対面",
+          "ONLINE": "オンライン",
+          "PHONE": "電話",
+          "EMAIL": "メール",
+          "notSpecified": "未指定"
+        }
+      },
+      "companyProcedures": {
+        "proceduresDocuments": "手続き・書類",
+        "document": "件",
+        "documents": "件",
+        "noDocuments": "この会社の書類が見つかりません",
+        "title": "タイトル",
+        "type": "種別",
+        "status": "ステータス",
+        "startDate": "開始日",
+        "endDate": "終了日",
+        "filePath": "ファイルパス",
+        "associatedStaff": "関連スタッフ",
+        "typeValues": {
+          "STAFF": "スタッフ",
+          "PROPERTY": "住居",
+          "COMPANY": "事業者",
+          "notSpecified": "未指定"
+        },
+        "statusValues": {
+          "ACTIVE": "有効",
+          "EXPIRED": "期限切れ",
+          "TERMINATED": "終了",
+          "notSpecified": "未指定"
+        }
       },
       "tenants": {
+        "tenantInformation": "入居情報",
+        "tenant": "件",
+        "tenants": "件",
+        "noTenantInfo": "この住居の入居情報はありません",
         "roomNumber": "部屋番号",
         "status": "ステータス",
         "rentPrice": "家賃",
         "period": "期間",
         "staffMembers": "スタッフメンバー",
-        "active": "アクティブ",
-        "inactive": "非アクティブ"
+        "active": "入居中",
+        "inactive": "退居",
+        "present": "現在",
+        "notSpecified": "未指定",
+        "email": "メール",
+        "phone": "電話"
       },
       "contracts": {
         "contractDocuments": "契約書類",
-        "document": "書類",
-        "documents": "書類",
+        "document": "件",
+        "documents": "件",
         "documentType": "書類種別",
         "status": "ステータス",
         "startDate": "開始日",
@@ -1940,32 +2055,17 @@
         "download": "ダウンロード",
         "noFileAttached": "ファイル添付なし",
         "ongoing": "継続中",
-        "noContractDocuments": "この住居の契約書類はありません"
-      },
-      "companyInteraction": {
-        "interactionRecords": "やり取り記録",
-        "record": "記録",
-        "records": "記録",
-        "date": "やり取り日",
-        "means": "手段",
-        "location": "場所",
-        "description": "説明",
-        "notSpecified": "未指定",
-        "noDescriptionProvided": "説明なし",
-        "noInteractionRecords": "この事業者のやり取り記録が見つかりません"
-      },
-      "companyProcedures": {
-        "proceduresDocuments": "手続き・書類",
-        "document": "書類",
-        "documents": "書類",
-        "title": "タイトル",
-        "type": "種別",
-        "status": "ステータス",
-        "startDate": "開始日",
-        "endDate": "終了日",
-        "filePath": "ファイルパス",
-        "associatedStaff": "関連スタッフ",
-        "noDocuments": "この事業者の書類が見つかりません"
+        "noContractDocuments": "この住居の契約書類はありません",
+        "statusValues": {
+          "ACTIVE": "有効",
+          "EXPIRED": "期限切れ",
+          "TERMINATED": "終了"
+        },
+        "typeValues": {
+          "STAFF": "スタッフ書類",
+          "PROPERTY": "住居書類",
+          "COMPANY": "事業者書類"
+        }
       }
     }
   },

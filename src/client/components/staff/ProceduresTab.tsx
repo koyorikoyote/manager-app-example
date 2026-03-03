@@ -6,7 +6,7 @@ import { useOptimizedDateFormatting, useOptimizedStatusFormatting } from '../../
 import { cn } from '../../utils/cn';
 import { AccordionList } from '../ui/AccordionList';
 import { documentService } from '../../services/documentService';
-import type { Staff, Document, DocumentType, DocumentStatus } from '../../../shared/types';
+import type { Staff, Document, DocumentType } from '../../../shared/types';
 
 export interface ProceduresTabProps {
     staff: Staff;
@@ -19,11 +19,11 @@ export const ProceduresTab: React.FC<ProceduresTabProps> = ({
     staff,
     isEditMode: _isEditMode,
 }) => {
-    const { t: _t } = useLanguage();
+    const { t } = useLanguage();
     const { isMobile } = useResponsive();
 
     const { formatDate, formatTime } = useOptimizedDateFormatting();
-    const { formatDocumentType, formatDocumentStatus } = useOptimizedStatusFormatting();
+    const { formatDocumentType, formatDocumentStatus } = useOptimizedStatusFormatting(t);
     const [documents, setDocuments] = useState<Document[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -71,12 +71,12 @@ export const ProceduresTab: React.FC<ProceduresTabProps> = ({
 
     // Memoized helper functions with fallbacks
     const formatDocumentTypeWithFallback = useCallback((type?: DocumentType) => {
-        return type ? formatDocumentType(type) : { text: '未指定 / Not specified', className: 'text-neutral-500 bg-neutral-50' };
-    }, [formatDocumentType]);
+        return type ? formatDocumentType(type) : { text: t('detailPages.accordionLabels.procedures.typeValues.notSpecified'), className: 'text-neutral-500 bg-neutral-50' };
+    }, [formatDocumentType, t]);
 
-    const formatDocumentStatusWithFallback = useCallback((status?: DocumentStatus) => {
-        return status ? formatDocumentStatus(status) : { text: '未指定 / Not specified', className: 'text-neutral-500 bg-neutral-50' };
-    }, [formatDocumentStatus]);
+    const formatDocumentStatusWithFallback = useCallback((status?: string) => {
+        return status ? formatDocumentStatus(status) : { text: t('detailPages.accordionLabels.procedures.statusValues.notSpecified'), className: 'text-neutral-500 bg-neutral-50' };
+    }, [formatDocumentStatus, t]);
 
     // Memoized render functions for better performance
     const renderSummary = useMemo(() => {
@@ -128,12 +128,12 @@ export const ProceduresTab: React.FC<ProceduresTabProps> = ({
                     isMobile ? 'grid-cols-1' : 'grid-cols-2'
                 )}>
                     <div className="space-y-1">
-                        <dt className="text-sm font-medium text-neutral-600">{_t('detailPages.accordionLabels.procedures.startDate')}</dt>
+                        <dt className="text-sm font-medium text-neutral-600">{t('detailPages.accordionLabels.procedures.startDate')}</dt>
                         <dd className="text-sm text-neutral-900">{formatDate(document.startDate)}</dd>
                     </div>
                     {document.endDate && (
                         <div className="space-y-1">
-                            <dt className="text-sm font-medium text-neutral-600">{_t('detailPages.accordionLabels.procedures.endDate')}</dt>
+                            <dt className="text-sm font-medium text-neutral-600">{t('detailPages.accordionLabels.procedures.endDate')}</dt>
                             <dd className="text-sm text-neutral-900">{formatDate(document.endDate)}</dd>
                         </div>
                     )}
@@ -145,7 +145,7 @@ export const ProceduresTab: React.FC<ProceduresTabProps> = ({
                     isMobile ? 'grid-cols-1' : 'grid-cols-2'
                 )}>
                     <div className="space-y-1">
-                        <dt className="text-sm font-medium text-neutral-600">{_t('detailPages.accordionLabels.procedures.type')}</dt>
+                        <dt className="text-sm font-medium text-neutral-600">{t('detailPages.accordionLabels.procedures.type')}</dt>
                         <dd className="text-sm">
                             <span className={cn(
                                 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
@@ -156,7 +156,7 @@ export const ProceduresTab: React.FC<ProceduresTabProps> = ({
                         </dd>
                     </div>
                     <div className="space-y-1">
-                        <dt className="text-sm font-medium text-neutral-600">{_t('detailPages.accordionLabels.procedures.status')}</dt>
+                        <dt className="text-sm font-medium text-neutral-600">{t('detailPages.accordionLabels.procedures.status')}</dt>
                         <dd className="text-sm">
                             <span className={cn(
                                 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
@@ -170,16 +170,16 @@ export const ProceduresTab: React.FC<ProceduresTabProps> = ({
 
                 {/* Title */}
                 <div className="space-y-1">
-                    <dt className="text-sm font-medium text-neutral-600">{_t('detailPages.accordionLabels.procedures.title')}</dt>
+                    <dt className="text-sm font-medium text-neutral-600">{t('detailPages.accordionLabels.procedures.title')}</dt>
                     <dd className="text-sm text-neutral-900 bg-neutral-50 rounded-lg p-3 border border-neutral-200">
-                        {document.title || _t('detailPages.accordionLabels.procedures.noTitleProvided')}
+                        {document.title || t('detailPages.accordionLabels.procedures.noTitleProvided')}
                     </dd>
                 </div>
 
                 {/* File Path */}
                 {document.filePath && (
                     <div className="space-y-1">
-                        <dt className="text-sm font-medium text-gray-600">File Path</dt>
+                        <dt className="text-sm font-medium text-gray-600">{t('detailPages.accordionLabels.procedures.filePath')}</dt>
                         <dd className="text-sm text-gray-900 bg-blue-50 rounded-lg p-3 border border-blue-200">
                             <div className="flex items-center justify-between">
                                 <span className="font-mono text-xs break-all">{document.filePath}</span>
@@ -190,7 +190,7 @@ export const ProceduresTab: React.FC<ProceduresTabProps> = ({
                                     }}
                                     className="ml-2 text-blue-600 hover:text-blue-800 text-xs font-medium"
                                 >
-                                    Download
+                                    {t('detailPages.accordionLabels.procedures.download')}
                                 </button>
                             </div>
                         </dd>
@@ -200,7 +200,7 @@ export const ProceduresTab: React.FC<ProceduresTabProps> = ({
                 {/* Related Entity ID */}
                 {document.relatedEntityId && (
                     <div className="space-y-1">
-                        <dt className="text-sm font-medium text-gray-600">Related Entity ID</dt>
+                        <dt className="text-sm font-medium text-gray-600">{t('detailPages.accordionLabels.procedures.relatedEntityId')}</dt>
                         <dd className="text-sm text-gray-900">{document.relatedEntityId}</dd>
                     </div>
                 )}
@@ -211,13 +211,13 @@ export const ProceduresTab: React.FC<ProceduresTabProps> = ({
                     isMobile ? 'grid-cols-1' : 'grid-cols-2'
                 )}>
                     <div className="space-y-1">
-                        <dt className="text-xs font-medium text-gray-500">Created At</dt>
+                        <dt className="text-xs font-medium text-gray-500">{t('detailPages.accordionLabels.procedures.createdAt')}</dt>
                         <dd className="text-xs text-gray-700">
                             {formatDate(document.createdAt)} {formatTime(document.createdAt)}
                         </dd>
                     </div>
                     <div className="space-y-1">
-                        <dt className="text-xs font-medium text-gray-500">Updated At</dt>
+                        <dt className="text-xs font-medium text-gray-500">{t('detailPages.accordionLabels.procedures.updatedAt')}</dt>
                         <dd className="text-xs text-gray-700">
                             {formatDate(document.updatedAt)} {formatTime(document.updatedAt)}
                         </dd>
@@ -244,14 +244,14 @@ export const ProceduresTab: React.FC<ProceduresTabProps> = ({
                     <h3 className={cn(
                         'font-semibold text-gray-900',
                         isMobile ? 'text-base' : 'text-lg'
-                    )}>Procedures & Documents</h3>
+                    )}>{t('detailPages.accordionLabels.procedures.sectionTitle')}</h3>
 
                 </div>
                 <div className={cn(
                     'text-gray-500 flex-shrink-0',
                     isMobile ? 'text-xs self-start' : 'text-sm'
                 )}>
-                    {documents.length} document{documents.length !== 1 ? 's' : ''}
+                    {documents.length !== 1 ? t('detailPages.accordionLabels.procedures.documentCount_other', { count: documents.length }) : t('detailPages.accordionLabels.procedures.documentCount_one', { count: documents.length })}
                 </div>
             </div>
 
@@ -263,7 +263,7 @@ export const ProceduresTab: React.FC<ProceduresTabProps> = ({
                 keyExtractor={keyExtractor}
                 loading={loading}
                 error={error}
-                emptyMessage="No documents found for this staff member"
+                emptyMessage={t('detailPages.accordionLabels.procedures.emptyMessage')}
                 className="space-y-0.5"
             />
         </div>

@@ -19,11 +19,11 @@ export const DailyRecordTab: React.FC<DailyRecordTabProps> = ({
     staff,
     isEditMode: _isEditMode,
 }) => {
-    const { t: _t } = useLanguage();
+    const { t } = useLanguage();
     const { isMobile } = useResponsive();
 
     const { formatDate, formatTime } = useOptimizedDateFormatting();
-    const { formatConditionStatus } = useOptimizedStatusFormatting();
+    const { formatConditionStatus } = useOptimizedStatusFormatting(t);
     const [dailyRecords, setDailyRecords] = useState<DailyRecordWithRelations[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -37,7 +37,7 @@ export const DailyRecordTab: React.FC<DailyRecordTabProps> = ({
 
         try {
             const records = await dailyRecordService.getByStaffId(staff.id, signal);
-            
+
             // Only update state if request wasn't cancelled
             if (!signal?.aborted) {
                 setDailyRecords(records);
@@ -57,13 +57,13 @@ export const DailyRecordTab: React.FC<DailyRecordTabProps> = ({
 
     useEffect(() => {
         const controller = new AbortController();
-        
+
         const loadData = async () => {
             await fetchDailyRecords(controller.signal);
         };
-        
+
         loadData();
-        
+
         return () => {
             controller.abort();
         };
@@ -125,11 +125,11 @@ export const DailyRecordTab: React.FC<DailyRecordTabProps> = ({
                         isMobile ? 'grid-cols-1' : 'grid-cols-2'
                     )}>
                         <div className="space-y-1">
-                            <dt className="text-sm font-medium text-gray-600">{_t('detailPages.accordionLabels.dailyRecord.dateOfRecord')}</dt>
+                            <dt className="text-sm font-medium text-gray-600">{t('detailPages.accordionLabels.dailyRecord.dateOfRecord')}</dt>
                             <dd className="text-sm text-gray-900">{formatDate(record.dateOfRecord)}</dd>
                         </div>
                         <div className="space-y-1">
-                            <dt className="text-sm font-medium text-gray-600">{_t('detailPages.accordionLabels.dailyRecord.conditionStatus')}</dt>
+                            <dt className="text-sm font-medium text-gray-600">{t('detailPages.accordionLabels.dailyRecord.conditionStatus')}</dt>
                             <dd className="text-sm">
                                 <span className={cn(
                                     'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
@@ -143,16 +143,16 @@ export const DailyRecordTab: React.FC<DailyRecordTabProps> = ({
 
                     {/* Feedback Content */}
                     <div className="space-y-1">
-                        <dt className="text-sm font-medium text-gray-600">{_t('detailPages.accordionLabels.dailyRecord.feedbackContent')}</dt>
+                        <dt className="text-sm font-medium text-gray-600">{t('detailPages.accordionLabels.dailyRecord.feedbackContent')}</dt>
                         <dd className="text-sm text-gray-900 bg-gray-50 rounded-lg p-3 border border-gray-200">
-                            {record.feedbackContent || _t('detailPages.accordionLabels.dailyRecord.noFeedbackProvided')}
+                            {record.feedbackContent || t('detailPages.accordionLabels.dailyRecord.noFeedbackProvided')}
                         </dd>
                     </div>
 
                     {/* Contact Number */}
                     {record.contactNumber && (
                         <div className="space-y-1">
-                            <dt className="text-sm font-medium text-gray-600">{_t('detailPages.accordionLabels.dailyRecord.contactNumber')}</dt>
+                            <dt className="text-sm font-medium text-gray-600">{t('detailPages.accordionLabels.dailyRecord.contactNumber')}</dt>
                             <dd className="text-sm text-gray-900">{record.contactNumber}</dd>
                         </div>
                     )}
@@ -163,13 +163,13 @@ export const DailyRecordTab: React.FC<DailyRecordTabProps> = ({
                         isMobile ? 'grid-cols-1' : 'grid-cols-2'
                     )}>
                         <div className="space-y-1">
-                            <dt className="text-xs font-medium text-gray-500">{_t('detailPages.accordionLabels.dailyRecord.createdAt')}</dt>
+                            <dt className="text-xs font-medium text-gray-500">{t('detailPages.accordionLabels.dailyRecord.createdAt')}</dt>
                             <dd className="text-xs text-gray-700">
                                 {formatDate(record.createdAt)} {formatTime(record.createdAt)}
                             </dd>
                         </div>
                         <div className="space-y-1">
-                            <dt className="text-xs font-medium text-gray-500">Updated At</dt>
+                            <dt className="text-xs font-medium text-gray-500">{t('detailPages.accordionLabels.dailyRecord.updatedAt')}</dt>
                             <dd className="text-xs text-gray-700">
                                 {formatDate(record.updatedAt)} {formatTime(record.updatedAt)}
                             </dd>
@@ -180,7 +180,7 @@ export const DailyRecordTab: React.FC<DailyRecordTabProps> = ({
         };
         detailsRenderer.displayName = 'DailyRecordDetailsRenderer';
         return detailsRenderer;
-    }, [isMobile, formatDate, formatConditionStatus, formatTime]);
+    }, [isMobile, formatDate, formatConditionStatus, formatTime, t]);
 
     // Memoized key extractor for accordion items
     const keyExtractor = useMemo(() => (record: DailyRecordWithRelations) => record.id, []);
@@ -199,14 +199,14 @@ export const DailyRecordTab: React.FC<DailyRecordTabProps> = ({
                     <h3 className={cn(
                         'font-semibold text-gray-900',
                         isMobile ? 'text-base' : 'text-lg'
-                    )}>Daily Records</h3>
+                    )}>{t('detailPages.accordionLabels.dailyRecord.title')}</h3>
 
                 </div>
                 <div className={cn(
                     'text-gray-500 flex-shrink-0',
                     isMobile ? 'text-xs self-start' : 'text-sm'
                 )}>
-                    {dailyRecords.length} record{dailyRecords.length !== 1 ? 's' : ''}
+                    {dailyRecords.length !== 1 ? t('detailPages.accordionLabels.dailyRecord.recordCount_other', { count: dailyRecords.length }) : t('detailPages.accordionLabels.dailyRecord.recordCount_one', { count: dailyRecords.length })}
                 </div>
             </div>
 
@@ -218,7 +218,7 @@ export const DailyRecordTab: React.FC<DailyRecordTabProps> = ({
                 keyExtractor={keyExtractor}
                 loading={loading}
                 error={error}
-                emptyMessage="No daily records found for this staff member"
+                emptyMessage={t('detailPages.accordionLabels.dailyRecord.emptyMessage')}
                 className="space-y-0.5"
             />
         </div>

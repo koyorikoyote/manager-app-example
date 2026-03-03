@@ -19,11 +19,11 @@ export const InteractionTab: React.FC<InteractionTabProps> = ({
     staff,
     isEditMode: _isEditMode,
 }) => {
-    const { t: _t } = useLanguage();
+    const { t } = useLanguage();
     const { isMobile } = useResponsive();
 
     const { formatDate, formatTime } = useOptimizedDateFormatting();
-    const { formatInteractionMeans } = useOptimizedStatusFormatting();
+    const { formatInteractionMeans } = useOptimizedStatusFormatting(t);
     const [interactionRecords, setInteractionRecords] = useState<InteractionRecord[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -71,8 +71,8 @@ export const InteractionTab: React.FC<InteractionTabProps> = ({
 
     // Memoized helper function to format interaction means with fallback
     const formatInteractionMeansWithFallback = useCallback((means?: InteractionMeans) => {
-        return means ? formatInteractionMeans(means) : { text: '未指定 / Not specified', className: 'text-gray-500 bg-gray-50' };
-    }, [formatInteractionMeans]);
+        return means ? formatInteractionMeans(means) : { text: t('detailPages.accordionLabels.interaction.meansValues.notSpecified'), className: 'text-gray-500 bg-gray-50' };
+    }, [formatInteractionMeans, t]);
 
     // Memoized render functions for better performance
     const renderSummary = useMemo(() => {
@@ -118,11 +118,11 @@ export const InteractionTab: React.FC<InteractionTabProps> = ({
                     isMobile ? 'grid-cols-1' : 'grid-cols-2'
                 )}>
                     <div className="space-y-1">
-                        <dt className="text-sm font-medium text-gray-600">{_t('detailPages.accordionLabels.interaction.date')}</dt>
+                        <dt className="text-sm font-medium text-gray-600">{t('detailPages.accordionLabels.interaction.date')}</dt>
                         <dd className="text-sm text-gray-900">{formatDate(record.date)}</dd>
                     </div>
                     <div className="space-y-1">
-                        <dt className="text-sm font-medium text-gray-600">{_t('detailPages.accordionLabels.interaction.means')}</dt>
+                        <dt className="text-sm font-medium text-gray-600">{t('detailPages.accordionLabels.interaction.means')}</dt>
                         <dd className="text-sm">
                             <span className={cn(
                                 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
@@ -137,16 +137,16 @@ export const InteractionTab: React.FC<InteractionTabProps> = ({
                 {/* Location */}
                 {record.location && (
                     <div className="space-y-1">
-                        <dt className="text-sm font-medium text-gray-600">{_t('detailPages.accordionLabels.interaction.location')}</dt>
+                        <dt className="text-sm font-medium text-gray-600">{t('detailPages.accordionLabels.interaction.location')}</dt>
                         <dd className="text-sm text-gray-900">{record.location}</dd>
                     </div>
                 )}
 
                 {/* Description */}
                 <div className="space-y-1">
-                    <dt className="text-sm font-medium text-gray-600">{_t('detailPages.accordionLabels.interaction.description')}</dt>
+                    <dt className="text-sm font-medium text-gray-600">{t('detailPages.accordionLabels.interaction.description')}</dt>
                     <dd className="text-sm text-gray-900 bg-gray-50 rounded-lg p-3 border border-gray-200">
-                        {record.description || _t('detailPages.accordionLabels.interaction.noDescriptionProvided')}
+                        {record.description || t('detailPages.accordionLabels.interaction.noDescriptionProvided')}
                     </dd>
                 </div>
 
@@ -157,13 +157,13 @@ export const InteractionTab: React.FC<InteractionTabProps> = ({
                 )}>
                     {record.type && (
                         <div className="space-y-1">
-                            <dt className="text-sm font-medium text-gray-600">{_t('detailPages.accordionLabels.interaction.type')}</dt>
+                            <dt className="text-sm font-medium text-gray-600">{t('detailPages.accordionLabels.interaction.type')}</dt>
                             <dd className="text-sm text-gray-900 capitalize">{record.type.toLowerCase()}</dd>
                         </div>
                     )}
                     {record.status && (
                         <div className="space-y-1">
-                            <dt className="text-sm font-medium text-gray-600">{_t('detailPages.accordionLabels.interaction.status')}</dt>
+                            <dt className="text-sm font-medium text-gray-600">{t('detailPages.accordionLabels.interaction.status')}</dt>
                             <dd className="text-sm text-gray-900 capitalize">{record.status.toLowerCase()}</dd>
                         </div>
                     )}
@@ -172,7 +172,7 @@ export const InteractionTab: React.FC<InteractionTabProps> = ({
                 {/* Person Concerned */}
                 {record.personConcerned && (
                     <div className="space-y-1">
-                        <dt className="text-sm font-medium text-gray-600">Person Concerned</dt>
+                        <dt className="text-sm font-medium text-gray-600">{t('detailPages.accordionLabels.interaction.personConcerned')}</dt>
                         <dd className="text-sm text-gray-900">{record.personConcerned}</dd>
                     </div>
                 )}
@@ -180,7 +180,7 @@ export const InteractionTab: React.FC<InteractionTabProps> = ({
                 {/* Response Details */}
                 {record.responseDetails && (
                     <div className="space-y-1">
-                        <dt className="text-sm font-medium text-gray-600">Response Details</dt>
+                        <dt className="text-sm font-medium text-gray-600">{t('detailPages.accordionLabels.interaction.responseDetails')}</dt>
                         <dd className="text-sm text-gray-900 bg-blue-50 rounded-lg p-3 border border-blue-200">
                             {record.responseDetails}
                         </dd>
@@ -195,13 +195,13 @@ export const InteractionTab: React.FC<InteractionTabProps> = ({
                     )}>
                         {record.creator && (
                             <div className="space-y-1">
-                                <dt className="text-sm font-medium text-gray-600">Created By</dt>
+                                <dt className="text-sm font-medium text-gray-600">{t('detailPages.accordionLabels.interaction.createdBy')}</dt>
                                 <dd className="text-sm text-gray-900">{record.creator.name}</dd>
                             </div>
                         )}
                         {record.userInCharge && (
                             <div className="space-y-1">
-                                <dt className="text-sm font-medium text-gray-600">User in Charge</dt>
+                                <dt className="text-sm font-medium text-gray-600">{t('detailPages.accordionLabels.interaction.userInCharge')}</dt>
                                 <dd className="text-sm text-gray-900">{record.userInCharge.name}</dd>
                             </div>
                         )}
@@ -214,13 +214,13 @@ export const InteractionTab: React.FC<InteractionTabProps> = ({
                     isMobile ? 'grid-cols-1' : 'grid-cols-2'
                 )}>
                     <div className="space-y-1">
-                        <dt className="text-xs font-medium text-gray-500">Created At</dt>
+                        <dt className="text-xs font-medium text-gray-500">{t('detailPages.accordionLabels.interaction.createdAt')}</dt>
                         <dd className="text-xs text-gray-700">
                             {formatDate(record.createdAt)} {formatTime(record.createdAt)}
                         </dd>
                     </div>
                     <div className="space-y-1">
-                        <dt className="text-xs font-medium text-gray-500">Updated At</dt>
+                        <dt className="text-xs font-medium text-gray-500">{t('detailPages.accordionLabels.interaction.updatedAt')}</dt>
                         <dd className="text-xs text-gray-700">
                             {formatDate(record.updatedAt)} {formatTime(record.updatedAt)}
                         </dd>
@@ -247,14 +247,14 @@ export const InteractionTab: React.FC<InteractionTabProps> = ({
                     <h3 className={cn(
                         'font-semibold text-gray-900',
                         isMobile ? 'text-base' : 'text-lg'
-                    )}>Interaction Records</h3>
+                    )}>{t('detailPages.accordionLabels.interaction.title')}</h3>
 
                 </div>
                 <div className={cn(
                     'text-gray-500 flex-shrink-0',
                     isMobile ? 'text-xs self-start' : 'text-sm'
                 )}>
-                    {interactionRecords.length} record{interactionRecords.length !== 1 ? 's' : ''}
+                    {interactionRecords.length !== 1 ? t('detailPages.accordionLabels.interaction.recordCount_other', { count: interactionRecords.length }) : t('detailPages.accordionLabels.interaction.recordCount_one', { count: interactionRecords.length })}
                 </div>
             </div>
 
@@ -266,7 +266,7 @@ export const InteractionTab: React.FC<InteractionTabProps> = ({
                 keyExtractor={keyExtractor}
                 loading={loading}
                 error={error}
-                emptyMessage="No interaction records found for this staff member"
+                emptyMessage={t('detailPages.accordionLabels.interaction.emptyMessage')}
                 className="space-y-0.5"
             />
         </div>

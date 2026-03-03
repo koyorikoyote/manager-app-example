@@ -36,7 +36,7 @@ const TenantsTabComponent: React.FC<TenantsTabProps> = ({
     property,
     isEditMode: _isEditMode,
 }) => {
-    const { t: _t } = useLanguage();
+    const { t } = useLanguage();
     const { isMobile } = useResponsive();
     const [tenants, setTenants] = useState<TenantRecord[]>([]);
     const [loading, setLoading] = useState(true);
@@ -104,21 +104,21 @@ const TenantsTabComponent: React.FC<TenantsTabProps> = ({
 
     // Memoized formatting functions
     const formatRentPriceRange = useMemo(() => (high: number | null, low: number | null): string => {
-        if (!high && !low) return '未指定 / Not specified';
+        if (!high && !low) return t('detailPages.accordionLabels.tenants.notSpecified');
         if (high && low && high !== low) {
             return `¥${low.toLocaleString()} - ¥${high.toLocaleString()}`;
         }
         if (high) return `¥${high.toLocaleString()}`;
         if (low) return `¥${low.toLocaleString()}`;
-        return '未指定 / Not specified';
-    }, []);
+        return t('detailPages.accordionLabels.tenants.notSpecified');
+    }, [t]);
 
     const formatPeriod = useMemo(() => (startDate: Date, endDate: Date | null): string => {
         const start = new Date(startDate).toLocaleDateString('ja-JP');
-        if (!endDate) return `${start} - Present`;
+        if (!endDate) return `${start} - ${t('detailPages.accordionLabels.tenants.present')}`;
         const end = new Date(endDate).toLocaleDateString('ja-JP');
         return `${start} - ${end}`;
-    }, []);
+    }, [t]);
 
     // Memoized render accordion summary for each tenant record
     const renderTenantSummary = useCallback((tenant: TenantRecord) => {
@@ -141,7 +141,7 @@ const TenantsTabComponent: React.FC<TenantsTabProps> = ({
                                 ? 'bg-green-100 text-green-800 border border-green-200'
                                 : 'bg-gray-100 text-gray-800 border border-gray-200'
                         )}>
-                            {tenant.isActive ? 'Active' : 'Inactive'}
+                            {tenant.isActive ? t('detailPages.accordionLabels.tenants.active') : t('detailPages.accordionLabels.tenants.inactive')}
                         </div>
                     </div>
                     <div className={cn(
@@ -161,7 +161,7 @@ const TenantsTabComponent: React.FC<TenantsTabProps> = ({
                 </div>
             </div>
         );
-    }, [isMobile, formatPeriod]);
+    }, [isMobile, formatPeriod, t]);
 
     // Memoized render accordion details for each tenant record
     const renderTenantDetails = useCallback((tenant: TenantRecord) => {
@@ -172,26 +172,26 @@ const TenantsTabComponent: React.FC<TenantsTabProps> = ({
                 {/* Tenant Information */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <span className="block text-sm font-medium text-gray-700 mb-1">{_t('detailPages.accordionLabels.tenants.roomNumber')}</span>
+                        <span className="block text-sm font-medium text-gray-700 mb-1">{t('detailPages.accordionLabels.tenants.roomNumber')}</span>
                         <span className="text-gray-900">{tenant.room}</span>
                     </div>
                     <div>
-                        <span className="block text-sm font-medium text-gray-700 mb-1">{_t('detailPages.accordionLabels.tenants.status')}</span>
+                        <span className="block text-sm font-medium text-gray-700 mb-1">{t('detailPages.accordionLabels.tenants.status')}</span>
                         <span className={cn(
                             'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
                             tenant.isActive
                                 ? 'bg-green-100 text-green-800 border border-green-200'
                                 : 'bg-gray-100 text-gray-800 border border-gray-200'
                         )}>
-                            {tenant.isActive ? _t('detailPages.accordionLabels.tenants.active') : _t('detailPages.accordionLabels.tenants.inactive')}
+                            {tenant.isActive ? t('detailPages.accordionLabels.tenants.active') : t('detailPages.accordionLabels.tenants.inactive')}
                         </span>
                     </div>
                     <div>
-                        <span className="block text-sm font-medium text-gray-700 mb-1">{_t('detailPages.accordionLabels.tenants.rentPrice')}</span>
+                        <span className="block text-sm font-medium text-gray-700 mb-1">{t('detailPages.accordionLabels.tenants.rentPrice')}</span>
                         <span className="text-gray-900">{rentPriceRange}</span>
                     </div>
                     <div>
-                        <span className="block text-sm font-medium text-gray-700 mb-1">{_t('detailPages.accordionLabels.tenants.period')}</span>
+                        <span className="block text-sm font-medium text-gray-700 mb-1">{t('detailPages.accordionLabels.tenants.period')}</span>
                         <span className="text-gray-900">{formatPeriod(tenant.startDate, tenant.endDate)}</span>
                     </div>
                 </div>
@@ -200,7 +200,7 @@ const TenantsTabComponent: React.FC<TenantsTabProps> = ({
                 {tenant.staff.length > 0 && (
                     <div>
                         <span className="block text-sm font-medium text-gray-700 mb-3">
-                            {_t('detailPages.accordionLabels.tenants.staffMembers')} ({tenant.staff.length})
+                            {t('detailPages.accordionLabels.tenants.staffMembers')} ({tenant.staff.length})
                         </span>
                         <div className="space-y-3">
                             {tenant.staff.map((staff) => (
@@ -223,7 +223,7 @@ const TenantsTabComponent: React.FC<TenantsTabProps> = ({
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
                                                 {staff.email && (
                                                     <div>
-                                                        <span className="text-gray-500">Email:</span>
+                                                        <span className="text-gray-500">{t('detailPages.accordionLabels.tenants.email')}:</span>
                                                         <a
                                                             href={`mailto:${staff.email}`}
                                                             className="ml-1 text-blue-600 hover:text-blue-700 underline"
@@ -234,7 +234,7 @@ const TenantsTabComponent: React.FC<TenantsTabProps> = ({
                                                 )}
                                                 {staff.phone && (
                                                     <div>
-                                                        <span className="text-gray-500">Phone:</span>
+                                                        <span className="text-gray-500">{t('detailPages.accordionLabels.tenants.phone')}:</span>
                                                         <a
                                                             href={`tel:${staff.phone}`}
                                                             className="ml-1 text-blue-600 hover:text-blue-700 underline"
@@ -253,17 +253,17 @@ const TenantsTabComponent: React.FC<TenantsTabProps> = ({
                 )}
             </div>
         );
-    }, [formatRentPriceRange, formatPeriod]);
+    }, [formatRentPriceRange, formatPeriod, t]);
 
     return (
         <div className="space-y-4">
             {/* Header */}
             <div className="flex items-center justify-between">
                 <h3 className="text-lg font-medium text-gray-900">
-                    Tenant Information
+                    {t('detailPages.accordionLabels.tenants.tenantInformation')}
                 </h3>
                 <div className="text-sm text-gray-500">
-                    {tenants.length} {tenants.length === 1 ? 'tenant' : 'tenants'}
+                    {tenants.length} {tenants.length === 1 ? t('detailPages.accordionLabels.tenants.tenant') : t('detailPages.accordionLabels.tenants.tenants')}
                 </div>
             </div>
 
@@ -275,7 +275,7 @@ const TenantsTabComponent: React.FC<TenantsTabProps> = ({
                 keyExtractor={(tenant) => tenant.id}
                 loading={loading}
                 error={error}
-                emptyMessage="No tenant information available for this property"
+                emptyMessage={t('detailPages.accordionLabels.tenants.noTenantInfo')}
                 className="space-y-2"
             />
         </div>

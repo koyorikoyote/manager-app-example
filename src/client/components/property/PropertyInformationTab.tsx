@@ -35,28 +35,28 @@ const PropertyInformationTabComponent: React.FC<PropertyInformationTabProps> = (
     onFieldChange,
     getFieldError,
 }) => {
-    const { t: _t } = useLanguage();
+    const { t } = useLanguage();
     const { isMobile } = useResponsive();
 
     const extendedProperty = property as ExtendedProperty;
 
     // Memoized property type options
     const propertyTypeOptions = useMemo(() => [
-        { value: '', label: 'Select property type' },
-        { value: 'RESIDENTIAL', label: 'Residential' },
-        { value: 'COMMERCIAL', label: 'Commercial' },
-        { value: 'INDUSTRIAL', label: 'Industrial' },
-        { value: 'MIXED_USE', label: 'Mixed Use' }
-    ], []);
+        { value: '', label: t('detailPages.property.fields.propertyType') },
+        { value: 'RESIDENTIAL', label: t('detailPages.property.propertyTypeValues.RESIDENTIAL') },
+        { value: 'COMMERCIAL', label: t('detailPages.property.propertyTypeValues.COMMERCIAL') },
+        { value: 'INDUSTRIAL', label: t('detailPages.property.propertyTypeValues.INDUSTRIAL') },
+        { value: 'MIXED_USE', label: t('detailPages.property.propertyTypeValues.MIXED_USE') }
+    ], [t]);
 
     // Memoized property status options
     const statusOptions = useMemo(() => [
-        { value: '', label: 'Select status' },
-        { value: 'ACTIVE', label: 'Active' },
-        { value: 'INACTIVE', label: 'Inactive' },
-        { value: 'UNDER_CONSTRUCTION', label: 'Under Construction' },
-        { value: 'SOLD', label: 'Sold' }
-    ], []);
+        { value: '', label: t('detailPages.property.fields.propertyStatus') },
+        { value: 'ACTIVE', label: t('detailPages.property.propertyStatusValues.ACTIVE') },
+        { value: 'INACTIVE', label: t('detailPages.property.propertyStatusValues.INACTIVE') },
+        { value: 'UNDER_CONSTRUCTION', label: t('detailPages.property.propertyStatusValues.UNDER_CONSTRUCTION') },
+        { value: 'SOLD', label: t('detailPages.property.propertyStatusValues.SOLD') }
+    ], [t]);
 
     // Memoized postal code formatting
     const formatPostalCode = useMemo(() => (postalCode: string | null | undefined): string => {
@@ -76,34 +76,24 @@ const PropertyInformationTabComponent: React.FC<PropertyInformationTabProps> = (
     // Memoized get property type label
     const getPropertyTypeLabel = useCallback((type: unknown): string => {
         switch (type) {
-            case 'RESIDENTIAL':
-                return 'Residential';
-            case 'COMMERCIAL':
-                return 'Commercial';
-            case 'INDUSTRIAL':
-                return 'Industrial';
-            case 'MIXED_USE':
-                return 'Mixed Use';
-            default:
-                return String(type);
+            case 'RESIDENTIAL': return t('detailPages.property.propertyTypeValues.RESIDENTIAL');
+            case 'COMMERCIAL': return t('detailPages.property.propertyTypeValues.COMMERCIAL');
+            case 'INDUSTRIAL': return t('detailPages.property.propertyTypeValues.INDUSTRIAL');
+            case 'MIXED_USE': return t('detailPages.property.propertyTypeValues.MIXED_USE');
+            default: return String(type);
         }
-    }, []);
+    }, [t]);
 
     // Memoized get status label
     const getStatusLabel = useCallback((status: unknown): string => {
         switch (status) {
-            case 'ACTIVE':
-                return 'Active';
-            case 'INACTIVE':
-                return 'Inactive';
-            case 'UNDER_CONSTRUCTION':
-                return 'Under Construction';
-            case 'SOLD':
-                return 'Sold';
-            default:
-                return String(status);
+            case 'ACTIVE': return t('detailPages.property.propertyStatusValues.ACTIVE');
+            case 'INACTIVE': return t('detailPages.property.propertyStatusValues.INACTIVE');
+            case 'UNDER_CONSTRUCTION': return t('detailPages.property.propertyStatusValues.UNDER_CONSTRUCTION');
+            case 'SOLD': return t('detailPages.property.propertyStatusValues.SOLD');
+            default: return String(status);
         }
-    }, []);
+    }, [t]);
 
     // Memoized render field group
     const renderFieldGroup = useCallback((title: string, children: React.ReactNode) => {
@@ -138,9 +128,9 @@ const PropertyInformationTabComponent: React.FC<PropertyInformationTabProps> = (
         return (
             <div className="space-y-6">
                 {/* Basic Information */}
-                {renderFieldGroup(_t('detailPages.property.sections.basicInformation'), (
+                {renderFieldGroup(t('detailPages.property.sections.basicInformation'), (
                     <>
-                        <FormField label={_t('detailPages.property.fields.propertyName')} error={getFieldError?.('name')}>
+                        <FormField label={t('detailPages.property.fields.propertyName')} error={getFieldError?.('name')}>
                             <input
                                 type="text"
                                 value={property.name || ''}
@@ -155,7 +145,7 @@ const PropertyInformationTabComponent: React.FC<PropertyInformationTabProps> = (
                             />
                         </FormField>
 
-                        <FormField label={_t('detailPages.property.fields.propertyType')} error={getFieldError?.('propertyType')}>
+                        <FormField label={t('detailPages.property.fields.propertyType')} error={getFieldError?.('propertyType')}>
                             <FormSelect
                                 value={property.propertyType || ''}
                                 onChange={(e) => onFieldChange('propertyType', e.target.value || null)}
@@ -164,7 +154,7 @@ const PropertyInformationTabComponent: React.FC<PropertyInformationTabProps> = (
                             />
                         </FormField>
 
-                        <FormField label="Property Code" error={getFieldError?.('propertyCode')}>
+                        <FormField label={t('detailPages.property.fields.propertyCode')} error={getFieldError?.('propertyCode')}>
                             <input
                                 type="text"
                                 value={property.propertyCode || ''}
@@ -179,7 +169,7 @@ const PropertyInformationTabComponent: React.FC<PropertyInformationTabProps> = (
                             />
                         </FormField>
 
-                        <FormField label="Status" error={getFieldError?.('status')}>
+                        <FormField label={t('detailPages.property.fields.status')} error={getFieldError?.('status')}>
                             <FormSelect
                                 value={property.status || ''}
                                 onChange={(e) => onFieldChange('status', e.target.value || null)}
@@ -188,7 +178,7 @@ const PropertyInformationTabComponent: React.FC<PropertyInformationTabProps> = (
                             />
                         </FormField>
 
-                        <FormField label={_t('detailPages.leftColumn.property.established')} error={getFieldError?.('establishmentDate')}>
+                        <FormField label={t('detailPages.leftColumn.property.established')} error={getFieldError?.('establishmentDate')}>
                             <input
                                 type="date"
                                 value={formatDateForInput(property.establishmentDate as Date | string | null | undefined)}
@@ -205,7 +195,7 @@ const PropertyInformationTabComponent: React.FC<PropertyInformationTabProps> = (
                         </FormField>
 
                         <div className="md:col-span-2">
-                            <FormField label="Description" error={getFieldError?.('description')}>
+                            <FormField label={t('detailPages.property.fields.description')} error={getFieldError?.('description')}>
                                 <textarea
                                     value={property.description || ''}
                                     onChange={(e) => onFieldChange('description', e.target.value || null)}
@@ -224,12 +214,12 @@ const PropertyInformationTabComponent: React.FC<PropertyInformationTabProps> = (
                 ))}
 
                 {/* Location Details */}
-                {renderFieldGroup('Location Details', (
+                {renderFieldGroup(t('detailPages.property.sections.locationDetails'), (
                     <>
                         <div className="md:col-span-2">
                             <div className="flex flex-col md:flex-row gap-4 items-start">
                                 <div className="w-32 shrink-0">
-                                    <FormField label="Postal Code" error={getFieldError?.('postalCode')}>
+                                    <FormField label={t('detailPages.property.fields.postalCode')} error={getFieldError?.('postalCode')}>
                                         <input
                                             type="text"
                                             value={extendedProperty.postalCode || ''}
@@ -244,7 +234,7 @@ const PropertyInformationTabComponent: React.FC<PropertyInformationTabProps> = (
                                     </FormField>
                                 </div>
                                 <div className="flex-1">
-                                    <FormField label="Address" error={getFieldError?.('address')}>
+                                    <FormField label={t('detailPages.property.fields.address')} error={getFieldError?.('address')}>
                                         <input
                                             type="text"
                                             value={property.address || ''}
@@ -262,7 +252,7 @@ const PropertyInformationTabComponent: React.FC<PropertyInformationTabProps> = (
                             </div>
                         </div>
 
-                        <FormField label="Country" error={getFieldError?.('country')}>
+                        <FormField label={t('detailPages.property.fields.country')} error={getFieldError?.('country')}>
                             <input
                                 type="text"
                                 value={extendedProperty.country || ''}
@@ -276,7 +266,7 @@ const PropertyInformationTabComponent: React.FC<PropertyInformationTabProps> = (
                             />
                         </FormField>
 
-                        <FormField label="Region" error={getFieldError?.('region')}>
+                        <FormField label={t('detailPages.property.fields.region')} error={getFieldError?.('region')}>
                             <input
                                 type="text"
                                 value={extendedProperty.region || ''}
@@ -290,7 +280,7 @@ const PropertyInformationTabComponent: React.FC<PropertyInformationTabProps> = (
                             />
                         </FormField>
 
-                        <FormField label="Prefecture" error={getFieldError?.('prefecture')}>
+                        <FormField label={t('detailPages.property.fields.prefecture')} error={getFieldError?.('prefecture')}>
                             <input
                                 type="text"
                                 value={extendedProperty.prefecture || ''}
@@ -304,7 +294,7 @@ const PropertyInformationTabComponent: React.FC<PropertyInformationTabProps> = (
                             />
                         </FormField>
 
-                        <FormField label="City" error={getFieldError?.('city')}>
+                        <FormField label={t('detailPages.property.fields.city')} error={getFieldError?.('city')}>
                             <input
                                 type="text"
                                 value={extendedProperty.city || ''}
@@ -321,9 +311,9 @@ const PropertyInformationTabComponent: React.FC<PropertyInformationTabProps> = (
                 ))}
 
                 {/* Ownership Information */}
-                {renderFieldGroup(_t('detailPages.property.sections.ownerInformation'), (
+                {renderFieldGroup(t('detailPages.property.sections.ownerInformation'), (
                     <>
-                        <FormField label="Owner Name" error={getFieldError?.('owner')}>
+                        <FormField label={t('detailPages.property.fields.owner')} error={getFieldError?.('owner')}>
                             <input
                                 type="text"
                                 value={extendedProperty.owner || ''}
@@ -337,7 +327,7 @@ const PropertyInformationTabComponent: React.FC<PropertyInformationTabProps> = (
                             />
                         </FormField>
 
-                        <FormField label="Owner Phone" error={getFieldError?.('ownerPhone')}>
+                        <FormField label={t('detailPages.property.fields.ownerPhone')} error={getFieldError?.('ownerPhone')}>
                             <input
                                 type="tel"
                                 value={extendedProperty.ownerPhone || ''}
@@ -351,7 +341,7 @@ const PropertyInformationTabComponent: React.FC<PropertyInformationTabProps> = (
                             />
                         </FormField>
 
-                        <FormField label="Owner Email" error={getFieldError?.('ownerEmail')}>
+                        <FormField label={t('detailPages.property.fields.ownerEmail')} error={getFieldError?.('ownerEmail')}>
                             <input
                                 type="email"
                                 value={extendedProperty.ownerEmail || ''}
@@ -365,7 +355,7 @@ const PropertyInformationTabComponent: React.FC<PropertyInformationTabProps> = (
                             />
                         </FormField>
 
-                        <FormField label="Owner Fax" error={getFieldError?.('ownerFax')}>
+                        <FormField label={t('detailPages.property.fields.ownerFax')} error={getFieldError?.('ownerFax')}>
                             <input
                                 type="tel"
                                 value={extendedProperty.ownerFax || ''}
@@ -382,9 +372,9 @@ const PropertyInformationTabComponent: React.FC<PropertyInformationTabProps> = (
                 ))}
 
                 {/* Management Details */}
-                {renderFieldGroup('Management Details', (
+                {renderFieldGroup(t('detailPages.property.sections.propertyDetails'), (
                     <>
-                        <FormField label="Person in Charge" error={getFieldError?.('managerId')}>
+                        <FormField label={t('detailPages.property.fields.personInCharge')} error={getFieldError?.('managerId')}>
                             <select
                                 value={property.managerId || ''}
                                 onChange={(e) => {
@@ -402,7 +392,7 @@ const PropertyInformationTabComponent: React.FC<PropertyInformationTabProps> = (
                             </select>
                         </FormField>
 
-                        <FormField label="Contract Date" error={getFieldError?.('contractDate')}>
+                        <FormField label={t('detailPages.property.fields.contractDate')} error={getFieldError?.('contractDate')}>
                             <input
                                 type="date"
                                 value={formatDateForInput(property.contractDate as Date | string | null | undefined)}
@@ -427,60 +417,60 @@ const PropertyInformationTabComponent: React.FC<PropertyInformationTabProps> = (
     return (
         <div className="space-y-6">
             {/* Basic Information */}
-            {renderFieldGroup(_t('detailPages.property.sections.basicInformation'), (
+            {renderFieldGroup(t('detailPages.property.sections.basicInformation'), (
                 <>
-                    {renderDisplayField(_t('detailPages.property.fields.propertyName'), property.name)}
-                    {renderDisplayField(_t('detailPages.property.fields.propertyType'), property.propertyType, getPropertyTypeLabel)}
-                    {renderDisplayField('Property Code', property.propertyCode)}
-                    {renderDisplayField(_t('detailPages.property.fields.propertyStatus'), property.status, getStatusLabel)}
-                    {renderDisplayField(_t('detailPages.leftColumn.property.established'), property.establishmentDate ? String(property.establishmentDate) : '', (date) =>
+                    {renderDisplayField(t('detailPages.property.fields.propertyName'), property.name)}
+                    {renderDisplayField(t('detailPages.property.fields.propertyType'), property.propertyType, getPropertyTypeLabel)}
+                    {renderDisplayField(t('detailPages.property.fields.propertyCode'), property.propertyCode)}
+                    {renderDisplayField(t('detailPages.property.fields.propertyStatus'), property.status, getStatusLabel)}
+                    {renderDisplayField(t('detailPages.leftColumn.property.established'), property.establishmentDate ? String(property.establishmentDate) : '', (date) =>
                         date ? new Date(String(date)).toLocaleDateString('ja-JP', { timeZone: TOKYO_TZ }) : ''
                     )}
                     <div className="md:col-span-2">
-                        {renderDisplayField(_t('detailPages.property.fields.description'), property.description)}
+                        {renderDisplayField(t('detailPages.property.fields.description'), property.description)}
                     </div>
                 </>
             ))}
 
             {/* Location Details */}
-            {renderFieldGroup(_t('detailPages.property.sections.locationDetails'), (
+            {renderFieldGroup(t('detailPages.property.sections.locationDetails'), (
                 <>
                     <div className="md:col-span-2">
                         <div className="flex flex-col md:flex-row gap-4 items-baseline">
                             <div className="w-24 shrink-0">
-                                <span className="block text-sm font-medium text-gray-700 whitespace-nowrap">{_t('detailPages.property.fields.postalCode')}</span>
+                                <span className="block text-sm font-medium text-gray-700 whitespace-nowrap">{t('detailPages.property.fields.postalCode')}</span>
                                 <span className="text-gray-900 inline-block align-baseline">{formatPostalCode(String(extendedProperty.postalCode || ''))}</span>
                             </div>
                             <div className="flex-1 min-w-0">
-                                <span className="block text-sm font-medium text-gray-700 whitespace-nowrap">{_t('detailPages.property.fields.address')}</span>
+                                <span className="block text-sm font-medium text-gray-700 whitespace-nowrap">{t('detailPages.property.fields.address')}</span>
                                 <span className="text-gray-900 inline-block align-baseline">
                                     <AddressClickableField address={property.address} />
                                 </span>
                             </div>
                         </div>
                     </div>
-                    {renderDisplayField(_t('detailPages.property.fields.country'), extendedProperty.country)}
-                    {renderDisplayField(_t('detailPages.property.fields.region'), extendedProperty.region)}
-                    {renderDisplayField(_t('detailPages.property.fields.prefecture'), extendedProperty.prefecture)}
-                    {renderDisplayField(_t('detailPages.property.fields.city'), extendedProperty.city)}
+                    {renderDisplayField(t('detailPages.property.fields.country'), extendedProperty.country)}
+                    {renderDisplayField(t('detailPages.property.fields.region'), extendedProperty.region)}
+                    {renderDisplayField(t('detailPages.property.fields.prefecture'), extendedProperty.prefecture)}
+                    {renderDisplayField(t('detailPages.property.fields.city'), extendedProperty.city)}
                 </>
             ))}
 
             {/* Ownership Information */}
-            {renderFieldGroup(_t('detailPages.property.sections.ownerInformation'), (
+            {renderFieldGroup(t('detailPages.property.sections.ownerInformation'), (
                 <>
-                    {renderDisplayField(_t('detailPages.property.fields.owner'), extendedProperty.owner)}
-                    {renderDisplayField(_t('detailPages.property.fields.ownerPhone'), extendedProperty.ownerPhone)}
-                    {renderDisplayField(_t('detailPages.property.fields.ownerEmail'), extendedProperty.ownerEmail)}
-                    {renderDisplayField(_t('detailPages.property.fields.ownerFax'), extendedProperty.ownerFax)}
+                    {renderDisplayField(t('detailPages.property.fields.owner'), extendedProperty.owner)}
+                    {renderDisplayField(t('detailPages.property.fields.ownerPhone'), extendedProperty.ownerPhone)}
+                    {renderDisplayField(t('detailPages.property.fields.ownerEmail'), extendedProperty.ownerEmail)}
+                    {renderDisplayField(t('detailPages.property.fields.ownerFax'), extendedProperty.ownerFax)}
                 </>
             ))}
 
             {/* Management Details */}
-            {renderFieldGroup(_t('detailPages.property.sections.propertyDetails'), (
+            {renderFieldGroup(t('detailPages.property.sections.propertyDetails'), (
                 <>
-                    {renderDisplayField('Person in Charge', property.manager?.name)}
-                    {renderDisplayField(_t('detailPages.property.fields.contractDate'), property.contractDate ? String(property.contractDate) : '', (date) =>
+                    {renderDisplayField(t('detailPages.property.fields.personInCharge'), property.manager?.name)}
+                    {renderDisplayField(t('detailPages.property.fields.contractDate'), property.contractDate ? String(property.contractDate) : '', (date) =>
                         date ? new Date(String(date)).toLocaleDateString('ja-JP', { timeZone: TOKYO_TZ }) : ''
                     )}
                 </>

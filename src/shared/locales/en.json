@@ -1852,18 +1852,33 @@
         "propertyName": "Property Name",
         "propertyType": "Property Type",
         "propertyStatus": "Property Status",
+        "propertyCode": "Property Code",
+        "status": "Status",
         "address": "Address",
         "postalCode": "Postal Code",
         "country": "Country",
         "region": "Region",
         "prefecture": "Prefecture",
         "city": "City",
-        "owner": "Owner",
+        "owner": "Owner Name",
         "ownerPhone": "Owner Phone",
         "ownerEmail": "Owner Email",
         "ownerFax": "Owner Fax",
         "contractDate": "Contract Date",
-        "description": "Description"
+        "description": "Description",
+        "personInCharge": "Person in Charge"
+      },
+      "propertyTypeValues": {
+        "RESIDENTIAL": "Residential",
+        "COMMERCIAL": "Commercial",
+        "INDUSTRIAL": "Industrial",
+        "MIXED_USE": "Mixed Use"
+      },
+      "propertyStatusValues": {
+        "ACTIVE": "Active",
+        "INACTIVE": "Inactive",
+        "UNDER_CONSTRUCTION": "Under Construction",
+        "SOLD": "Sold"
       }
     },
     "destination": {
@@ -1933,40 +1948,140 @@
     },
     "accordionLabels": {
       "dailyRecord": {
+        "title": "Daily Records",
+        "recordCount_one": "{{count}} record",
+        "recordCount_other": "{{count}} records",
+        "emptyMessage": "No daily records found for this staff member",
         "dateOfRecord": "Date of Record",
         "conditionStatus": "Condition Status",
         "feedbackContent": "Feedback Content",
         "contactNumber": "Personal Contact",
         "createdAt": "Created At",
         "updatedAt": "Updated At",
-        "noFeedbackProvided": "No feedback provided"
+        "noFeedbackProvided": "No feedback provided",
+        "conditionStatusValues": {
+          "Excellent": "Excellent",
+          "Good": "Good",
+          "Fair": "Fair",
+          "Poor": "Poor",
+          "notSpecified": "Not specified"
+        }
       },
       "interaction": {
+        "title": "Interaction Records",
+        "recordCount_one": "{{count}} record",
+        "recordCount_other": "{{count}} records",
+        "emptyMessage": "No interaction records found for this staff member",
         "date": "Date",
-        "means": "Means",
+        "means": "Communication Method",
         "location": "Location",
         "description": "Description",
         "type": "Type",
         "status": "Status",
-        "noDescriptionProvided": "No description provided"
+        "personConcerned": "Person Concerned",
+        "responseDetails": "Response Details",
+        "createdBy": "Created By",
+        "userInCharge": "User in Charge",
+        "createdAt": "Created At",
+        "updatedAt": "Updated At",
+        "noDescriptionProvided": "No description provided",
+        "meansValues": {
+          "FACE_TO_FACE": "Face to Face",
+          "ONLINE": "Online",
+          "PHONE": "Phone",
+          "EMAIL": "Email",
+          "notSpecified": "Not specified"
+        }
       },
       "procedures": {
+        "sectionTitle": "Procedures & Documents",
+        "documentCount_one": "{{count}} document",
+        "documentCount_other": "{{count}} documents",
+        "emptyMessage": "No documents found for this staff member",
         "startDate": "Start Date",
         "endDate": "End Date",
         "type": "Type",
         "status": "Status",
         "title": "Title",
         "filePath": "File Path",
-        "noTitleProvided": "No title provided"
+        "download": "Download",
+        "relatedEntityId": "Related Entity ID",
+        "createdAt": "Created At",
+        "updatedAt": "Updated At",
+        "noTitleProvided": "No title provided",
+        "typeValues": {
+          "STAFF": "Staff",
+          "PROPERTY": "Property",
+          "COMPANY": "Company",
+          "notSpecified": "Not specified"
+        },
+        "statusValues": {
+          "ACTIVE": "Active",
+          "EXPIRED": "Expired",
+          "TERMINATED": "Terminated",
+          "notSpecified": "Not specified"
+        }
+      },
+      "companyInteraction": {
+        "interactionRecords": "Interaction Records",
+        "record": "record",
+        "records": "records",
+        "noInteractionRecords": "No interaction records found for this company",
+        "date": "Date",
+        "means": "Communication Method",
+        "location": "Location",
+        "description": "Description",
+        "noDescriptionProvided": "No description provided",
+        "notSpecified": "Not specified",
+        "meansValues": {
+          "FACE_TO_FACE": "Face to Face",
+          "ONLINE": "Online",
+          "PHONE": "Phone",
+          "EMAIL": "Email",
+          "notSpecified": "Not specified"
+        }
+      },
+      "companyProcedures": {
+        "proceduresDocuments": "Procedures & Documents",
+        "document": "document",
+        "documents": "documents",
+        "noDocuments": "No documents found for this company",
+        "title": "Title",
+        "type": "Type",
+        "status": "Status",
+        "startDate": "Start Date",
+        "endDate": "End Date",
+        "filePath": "File Path",
+        "associatedStaff": "Associated Staff",
+        "typeValues": {
+          "STAFF": "Staff",
+          "PROPERTY": "Property",
+          "COMPANY": "Company",
+          "notSpecified": "Not specified"
+        },
+        "statusValues": {
+          "ACTIVE": "Active",
+          "EXPIRED": "Expired",
+          "TERMINATED": "Terminated",
+          "notSpecified": "Not specified"
+        }
       },
       "tenants": {
+        "tenantInformation": "Tenant Information",
+        "tenant": "tenant",
+        "tenants": "tenants",
+        "noTenantInfo": "No tenant information available for this property",
         "roomNumber": "Room Number",
         "status": "Status",
         "rentPrice": "Rent Price",
         "period": "Period",
         "staffMembers": "Staff Members",
         "active": "Active",
-        "inactive": "Inactive"
+        "inactive": "Inactive",
+        "present": "Present",
+        "notSpecified": "Not specified",
+        "email": "Email",
+        "phone": "Phone"
       },
       "contracts": {
         "contractDocuments": "Contract Documents",
@@ -1983,32 +2098,17 @@
         "download": "Download",
         "noFileAttached": "No file attached",
         "ongoing": "Ongoing",
-        "noContractDocuments": "No contract documents available for this property"
-      },
-      "companyInteraction": {
-        "interactionRecords": "Interaction Records",
-        "record": "record",
-        "records": "records",
-        "date": "Date",
-        "means": "Means",
-        "location": "Location",
-        "description": "Description",
-        "notSpecified": "--",
-        "noDescriptionProvided": "No description provided",
-        "noInteractionRecords": "No interaction records found for this company"
-      },
-      "companyProcedures": {
-        "proceduresDocuments": "Procedures & Documents",
-        "document": "document",
-        "documents": "documents",
-        "title": "Title",
-        "type": "Type",
-        "status": "Status",
-        "startDate": "Start Date",
-        "endDate": "End Date",
-        "filePath": "File Path",
-        "associatedStaff": "Associated Staff",
-        "noDocuments": "No documents found for this company"
+        "noContractDocuments": "No contract documents available for this property",
+        "statusValues": {
+          "ACTIVE": "Active",
+          "EXPIRED": "Expired",
+          "TERMINATED": "Terminated"
+        },
+        "typeValues": {
+          "STAFF": "Staff Document",
+          "PROPERTY": "Property Document",
+          "COMPANY": "Company Document"
+        }
       }
     }
   },

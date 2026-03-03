@@ -51,13 +51,13 @@ const PORT =
 function startServer() {
   // Start the HTTP server immediately to avoid proxy ECONNREFUSED even if DB is down
   const appInstance = getApp();
-  const server = (appInstance as any).listen(PORT, "127.0.0.1", () => {
-    console.log(`🚀 Server is running on http://127.0.0.1:${PORT}`);
+  const server = (appInstance as any).listen(PORT, "0.0.0.0", () => {
+    console.log(`🚀 Server is running on http://0.0.0.0:${PORT}`);
     console.log(`📊 Environment: ${process.env.NODE_ENV || "development"}`);
     console.log("🔗 Database: MySQL via Prisma ORM");
 
     if (process.env.NODE_ENV === "development") {
-      console.log(`🌐 Server: http://127.0.0.1:${PORT}`);
+      console.log(`🌐 Server: http://0.0.0.0:${PORT}`);
       console.log(`🔍 Health: http://127.0.0.1:${PORT}/api/health`);
     }
   });

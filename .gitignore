@@ -9,11 +9,15 @@ dist/
 build/
 
 # Environment variables
-#.env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
+.env
+.env.production
+
+# Terraform
+*.auto.tfvars
 
 # IDE files
 .vscode/
@@ -62,6 +66,3 @@ uploads/staff-photos/*
 uploads/daily-records/*
 uploads/company-photos/*
 uploads/*
-
-.env
-.env.production

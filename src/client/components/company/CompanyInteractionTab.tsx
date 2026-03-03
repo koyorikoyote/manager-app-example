@@ -18,10 +18,10 @@ export const CompanyInteractionTab: React.FC<CompanyInteractionTabProps> = ({
     company,
     isEditMode: _isEditMode,
 }) => {
-    const { t: _t } = useLanguage();
+    const { t } = useLanguage();
     const { isMobile } = useResponsive();
     const { formatDate } = useOptimizedDateFormatting();
-    const { formatInteractionMeans } = useOptimizedStatusFormatting();
+    const { formatInteractionMeans } = useOptimizedStatusFormatting(t);
 
     const [interactionRecords, setInteractionRecords] = useState<CompanyInteractionRecord[]>([]);
     const [loading, setLoading] = useState(true);
@@ -30,7 +30,7 @@ export const CompanyInteractionTab: React.FC<CompanyInteractionTabProps> = ({
     // Load interaction records for the company with AbortController support
     useEffect(() => {
         const controller = new AbortController();
-        
+
         const loadInteractionRecords = async () => {
             try {
                 setLoading(true);
@@ -38,7 +38,7 @@ export const CompanyInteractionTab: React.FC<CompanyInteractionTabProps> = ({
 
                 // Always fetch interaction records from API since company data doesn't include them
                 const records = await companyService.getInteractionRecords(company.id, controller.signal);
-                
+
                 // Only update state if request wasn't cancelled
                 if (!controller.signal.aborted) {
                     setInteractionRecords(Array.isArray(records) ? records : []);
@@ -59,7 +59,7 @@ export const CompanyInteractionTab: React.FC<CompanyInteractionTabProps> = ({
         };
 
         loadInteractionRecords();
-        
+
         return () => {
             controller.abort();
         };
@@ -67,7 +67,7 @@ export const CompanyInteractionTab: React.FC<CompanyInteractionTabProps> = ({
 
     // Render summary for accordion item
     const renderSummary = (record: CompanyInteractionRecord) => {
-        const meansInfo = record.means ? formatInteractionMeans(record.means) : { text: _t('detailPages.accordionLabels.companyInteraction.notSpecified'), className: 'bg-gray-100 text-gray-800' };
+        const meansInfo = record.means ? formatInteractionMeans(record.means) : { text: t('detailPages.accordionLabels.companyInteraction.notSpecified'), className: 'bg-gray-100 text-gray-800' };
 
         return (
             <div className="flex items-center justify-between w-full">
@@ -101,17 +101,17 @@ export const CompanyInteractionTab: React.FC<CompanyInteractionTabProps> = ({
                     isMobile ? 'grid-cols-1' : 'grid-cols-2'
                 )}>
                     <div className="space-y-1">
-                        <dt className="text-sm font-medium text-gray-600">{_t('detailPages.accordionLabels.companyInteraction.date')}</dt>
+                        <dt className="text-sm font-medium text-gray-600">{t('detailPages.accordionLabels.companyInteraction.date')}</dt>
                         <dd className="text-sm text-gray-900">{formatDate(record.date)}</dd>
                     </div>
                     <div className="space-y-1">
-                        <dt className="text-sm font-medium text-gray-600">{_t('detailPages.accordionLabels.companyInteraction.means')}</dt>
+                        <dt className="text-sm font-medium text-gray-600">{t('detailPages.accordionLabels.companyInteraction.means')}</dt>
                         <dd className="text-sm">
                             <span className={cn(
                                 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
                                 record.means ? formatInteractionMeans(record.means).className : 'bg-gray-100 text-gray-800'
                             )}>
-                                {record.means ? formatInteractionMeans(record.means).text : _t('detailPages.accordionLabels.companyInteraction.notSpecified')}
+                                {record.means ? formatInteractionMeans(record.means).text : t('detailPages.accordionLabels.companyInteraction.notSpecified')}
                             </span>
                         </dd>
                     </div>
@@ -119,15 +119,15 @@ export const CompanyInteractionTab: React.FC<CompanyInteractionTabProps> = ({
 
                 {record.location && (
                     <div className="space-y-1">
-                        <dt className="text-sm font-medium text-gray-600">{_t('detailPages.accordionLabels.companyInteraction.location')}</dt>
+                        <dt className="text-sm font-medium text-gray-600">{t('detailPages.accordionLabels.companyInteraction.location')}</dt>
                         <dd className="text-sm text-gray-900">{record.location}</dd>
                     </div>
                 )}
 
                 <div className="space-y-1">
-                    <dt className="text-sm font-medium text-gray-600">{_t('detailPages.accordionLabels.companyInteraction.description')}</dt>
+                    <dt className="text-sm font-medium text-gray-600">{t('detailPages.accordionLabels.companyInteraction.description')}</dt>
                     <dd className="text-sm text-gray-900 bg-gray-50 rounded-lg p-3 border border-gray-200">
-                        {record.description || _t('detailPages.accordionLabels.companyInteraction.noDescriptionProvided')}
+                        {record.description || t('detailPages.accordionLabels.companyInteraction.noDescriptionProvided')}
                     </dd>
                 </div>
             </div>
@@ -142,10 +142,10 @@ export const CompanyInteractionTab: React.FC<CompanyInteractionTabProps> = ({
             {!loading && !error && (
                 <div className="flex justify-between items-center">
                     <h3 className="text-lg font-semibold text-gray-900">
-                        {_t('detailPages.accordionLabels.companyInteraction.interactionRecords')}
+                        {t('detailPages.accordionLabels.companyInteraction.interactionRecords')}
                     </h3>
                     <div className="text-sm text-gray-500">
-                        {interactionRecords.length} {interactionRecords.length === 1 ? _t('detailPages.accordionLabels.companyInteraction.record') : _t('detailPages.accordionLabels.companyInteraction.records')}
+                        {interactionRecords.length} {interactionRecords.length === 1 ? t('detailPages.accordionLabels.companyInteraction.record') : t('detailPages.accordionLabels.companyInteraction.records')}
                     </div>
                 </div>
             )}
@@ -156,7 +156,7 @@ export const CompanyInteractionTab: React.FC<CompanyInteractionTabProps> = ({
                 keyExtractor={keyExtractor}
                 loading={loading}
                 error={error}
-                emptyMessage={_t('detailPages.accordionLabels.companyInteraction.noInteractionRecords')}
+                emptyMessage={t('detailPages.accordionLabels.companyInteraction.noInteractionRecords')}
                 className="space-y-0.5"
             />
         </div>

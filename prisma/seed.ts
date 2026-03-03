@@ -137,15 +137,12 @@ async function main() {
     INSERT INTO mobile_users
       (username, email, password_hash, display_name, is_active, staff_id, user_id, created_at, updated_at)
     VALUES
-      ('admin', 'admin@mobile.local', ${"$2b$10$3C0eR3N44e3YQp1juCRDe.Dq5FkesD3viZEx.o9x9fhhHvPmViIN2"}, 'Admin', true, NULL, ${
-    adminUser.id
-  }, NOW(), NOW()),
-      ('manager', 'manager@mobile.local', ${"$2b$10$nFHZv90IpH83UfC9.eTho.O.3dij7B4Oy2e1H1bhrKkBiijwormXe"}, 'Manager', true, NULL, ${
-    managerUser.id
-  }, NOW(), NOW()),
-      ('user', 'user@mobile.local', ${"$2b$10$75xcpdFniXqYHyMALgR./.bVGvPyoeN4diMvu4K8cPxVUuuAcek32"}, 'User', true, NULL, ${
-    regularUser.id
-  }, NOW(), NOW())
+      ('admin', 'admin@mobile.local', ${"$2b$10$3C0eR3N44e3YQp1juCRDe.Dq5FkesD3viZEx.o9x9fhhHvPmViIN2"}, 'Admin', true, NULL, ${adminUser.id
+    }, NOW(), NOW()),
+      ('manager', 'manager@mobile.local', ${"$2b$10$nFHZv90IpH83UfC9.eTho.O.3dij7B4Oy2e1H1bhrKkBiijwormXe"}, 'Manager', true, NULL, ${managerUser.id
+    }, NOW(), NOW()),
+      ('user', 'user@mobile.local', ${"$2b$10$75xcpdFniXqYHyMALgR./.bVGvPyoeN4diMvu4K8cPxVUuuAcek32"}, 'User', true, NULL, ${regularUser.id
+    }, NOW(), NOW())
     ON DUPLICATE KEY UPDATE
       email = VALUES(email),
       password_hash = VALUES(password_hash),
@@ -2726,6 +2723,15 @@ async function main() {
   await prisma.inquiry.createMany({
     data: inquiryData,
   });
+
+  // 14. Link Mobile Users to Staff Records
+  console.log("🔗 Linking mobile users to staff records...");
+  await prisma.$executeRaw`
+    UPDATE mobile_users mu
+    JOIN staff s ON mu.user_id = s.user_id
+    SET mu.staff_id = s.id
+    WHERE mu.user_id IS NOT NULL AND s.user_id IS NOT NULL
+  `;
 
   console.log("✅ Database seeding completed successfully!");
   console.log(`

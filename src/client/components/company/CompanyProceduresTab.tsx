@@ -18,10 +18,10 @@ export const CompanyProceduresTab: React.FC<CompanyProceduresTabProps> = ({
     company,
     isEditMode: _isEditMode,
 }) => {
-    const { t: _t } = useLanguage();
+    const { t } = useLanguage();
     const { isMobile } = useResponsive();
     const { formatDate } = useOptimizedDateFormatting();
-    const { formatDocumentType, formatDocumentStatus } = useOptimizedStatusFormatting();
+    const { formatDocumentType, formatDocumentStatus } = useOptimizedStatusFormatting(t);
 
     const [documents, setDocuments] = useState<CompanyDocument[]>([]);
     const [loading, setLoading] = useState(true);
@@ -30,7 +30,7 @@ export const CompanyProceduresTab: React.FC<CompanyProceduresTabProps> = ({
     // Load documents for the company with AbortController support
     useEffect(() => {
         const controller = new AbortController();
-        
+
         const loadDocuments = async () => {
             try {
                 setLoading(true);
@@ -38,7 +38,7 @@ export const CompanyProceduresTab: React.FC<CompanyProceduresTabProps> = ({
 
                 // Always fetch documents from API since company data doesn't include them
                 const records = await companyService.getDocuments(company.id, controller.signal);
-                
+
                 // Only update state if request wasn't cancelled
                 if (!controller.signal.aborted) {
                     setDocuments(Array.isArray(records) ? records : []);
@@ -59,7 +59,7 @@ export const CompanyProceduresTab: React.FC<CompanyProceduresTabProps> = ({
         };
 
         loadDocuments();
-        
+
         return () => {
             controller.abort();
         };
@@ -105,11 +105,11 @@ export const CompanyProceduresTab: React.FC<CompanyProceduresTabProps> = ({
                     isMobile ? 'grid-cols-1' : 'grid-cols-2'
                 )}>
                     <div className="space-y-1">
-                        <dt className="text-sm font-medium text-gray-600">{_t('detailPages.accordionLabels.companyProcedures.title')}</dt>
+                        <dt className="text-sm font-medium text-gray-600">{t('detailPages.accordionLabels.companyProcedures.title')}</dt>
                         <dd className="text-sm text-gray-900">{document.title}</dd>
                     </div>
                     <div className="space-y-1">
-                        <dt className="text-sm font-medium text-gray-600">{_t('detailPages.accordionLabels.companyProcedures.type')}</dt>
+                        <dt className="text-sm font-medium text-gray-600">{t('detailPages.accordionLabels.companyProcedures.type')}</dt>
                         <dd className="text-sm">
                             <span className={cn(
                                 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
@@ -120,7 +120,7 @@ export const CompanyProceduresTab: React.FC<CompanyProceduresTabProps> = ({
                         </dd>
                     </div>
                     <div className="space-y-1">
-                        <dt className="text-sm font-medium text-gray-600">{_t('detailPages.accordionLabels.companyProcedures.status')}</dt>
+                        <dt className="text-sm font-medium text-gray-600">{t('detailPages.accordionLabels.companyProcedures.status')}</dt>
                         <dd className="text-sm">
                             <span className={cn(
                                 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
@@ -131,21 +131,21 @@ export const CompanyProceduresTab: React.FC<CompanyProceduresTabProps> = ({
                         </dd>
                     </div>
                     <div className="space-y-1">
-                        <dt className="text-sm font-medium text-gray-600">{_t('detailPages.accordionLabels.companyProcedures.startDate')}</dt>
+                        <dt className="text-sm font-medium text-gray-600">{t('detailPages.accordionLabels.companyProcedures.startDate')}</dt>
                         <dd className="text-sm text-gray-900">{formatDate(document.startDate)}</dd>
                     </div>
                 </div>
 
                 {document.endDate && (
                     <div className="space-y-1">
-                        <dt className="text-sm font-medium text-gray-600">{_t('detailPages.accordionLabels.companyProcedures.endDate')}</dt>
+                        <dt className="text-sm font-medium text-gray-600">{t('detailPages.accordionLabels.companyProcedures.endDate')}</dt>
                         <dd className="text-sm text-gray-900">{formatDate(document.endDate)}</dd>
                     </div>
                 )}
 
                 {document.filePath && (
                     <div className="space-y-1">
-                        <dt className="text-sm font-medium text-gray-600">{_t('detailPages.accordionLabels.companyProcedures.filePath')}</dt>
+                        <dt className="text-sm font-medium text-gray-600">{t('detailPages.accordionLabels.companyProcedures.filePath')}</dt>
                         <dd className="text-sm text-gray-900 bg-gray-50 rounded-lg p-3 border border-gray-200 font-mono">
                             {document.filePath}
                         </dd>
@@ -154,7 +154,7 @@ export const CompanyProceduresTab: React.FC<CompanyProceduresTabProps> = ({
 
                 {document.staff && (
                     <div className="space-y-1">
-                        <dt className="text-sm font-medium text-gray-600">{_t('detailPages.accordionLabels.companyProcedures.associatedStaff')}</dt>
+                        <dt className="text-sm font-medium text-gray-600">{t('detailPages.accordionLabels.companyProcedures.associatedStaff')}</dt>
                         <dd className="text-sm text-gray-900">
                             {document.staff.name} ({document.staff.employeeId})
                         </dd>
@@ -172,10 +172,10 @@ export const CompanyProceduresTab: React.FC<CompanyProceduresTabProps> = ({
             {!loading && !error && (
                 <div className="flex justify-between items-center">
                     <h3 className="text-lg font-semibold text-gray-900">
-                        {_t('detailPages.accordionLabels.companyProcedures.proceduresDocuments')}
+                        {t('detailPages.accordionLabels.companyProcedures.proceduresDocuments')}
                     </h3>
                     <div className="text-sm text-gray-500">
-                        {documents.length} {documents.length === 1 ? _t('detailPages.accordionLabels.companyProcedures.document') : _t('detailPages.accordionLabels.companyProcedures.documents')}
+                        {documents.length} {documents.length === 1 ? t('detailPages.accordionLabels.companyProcedures.document') : t('detailPages.accordionLabels.companyProcedures.documents')}
                     </div>
                 </div>
             )}
@@ -186,7 +186,7 @@ export const CompanyProceduresTab: React.FC<CompanyProceduresTabProps> = ({
                 keyExtractor={keyExtractor}
                 loading={loading}
                 error={error}
-                emptyMessage={_t('detailPages.accordionLabels.companyProcedures.noDocuments')}
+                emptyMessage={t('detailPages.accordionLabels.companyProcedures.noDocuments')}
                 className="space-y-0.5"
             />
         </div>

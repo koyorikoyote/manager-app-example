@@ -1,4 +1,5 @@
 import { useCallback, useMemo } from "react";
+import type { TranslationFunction } from "../../shared/types/translations";
 
 /**
  * Performance optimization utilities specifically for Staff Detail components
@@ -69,16 +70,17 @@ export const useOptimizedDateFormatting = () => {
 };
 
 // Optimized status formatting with memoized color mappings
-export const useOptimizedStatusFormatting = () => {
+export const useOptimizedStatusFormatting = (t?: TranslationFunction) => {
   const conditionStatusMap = useMemo(
     () => ({
       Excellent: {
-        text: "Excellent",
+        textKey: "detailPages.accordionLabels.dailyRecord.conditionStatusValues.Excellent",
+        fallback: "Excellent",
         className: "text-green-700 bg-green-100",
       },
-      Good: { text: "Good", className: "text-blue-700 bg-blue-100" },
-      Fair: { text: "Fair", className: "text-yellow-700 bg-yellow-100" },
-      Poor: { text: "Poor", className: "text-red-700 bg-red-100" },
+      Good: { textKey: "detailPages.accordionLabels.dailyRecord.conditionStatusValues.Good", fallback: "Good", className: "text-blue-700 bg-blue-100" },
+      Fair: { textKey: "detailPages.accordionLabels.dailyRecord.conditionStatusValues.Fair", fallback: "Fair", className: "text-yellow-700 bg-yellow-100" },
+      Poor: { textKey: "detailPages.accordionLabels.dailyRecord.conditionStatusValues.Poor", fallback: "Poor", className: "text-red-700 bg-red-100" },
     }),
     []
   );
@@ -86,31 +88,33 @@ export const useOptimizedStatusFormatting = () => {
   const interactionMeansMap = useMemo(
     () => ({
       FACE_TO_FACE: {
-        text: "Face to Face",
+        textKey: "detailPages.accordionLabels.interaction.meansValues.FACE_TO_FACE",
+        fallback: "Face to Face",
         className: "text-green-700 bg-green-100",
       },
-      ONLINE: { text: "Online", className: "text-blue-700 bg-blue-100" },
-      PHONE: { text: "Phone", className: "text-purple-700 bg-purple-100" },
-      EMAIL: { text: "Email", className: "text-orange-700 bg-orange-100" },
+      ONLINE: { textKey: "detailPages.accordionLabels.interaction.meansValues.ONLINE", fallback: "Online", className: "text-blue-700 bg-blue-100" },
+      PHONE: { textKey: "detailPages.accordionLabels.interaction.meansValues.PHONE", fallback: "Phone", className: "text-purple-700 bg-purple-100" },
+      EMAIL: { textKey: "detailPages.accordionLabels.interaction.meansValues.EMAIL", fallback: "Email", className: "text-orange-700 bg-orange-100" },
     }),
     []
   );
 
   const documentTypeMap = useMemo(
     () => ({
-      STAFF: { text: "Staff", className: "text-blue-700 bg-blue-100" },
-      PROPERTY: { text: "Property", className: "text-green-700 bg-green-100" },
-      COMPANY: { text: "Company", className: "text-purple-700 bg-purple-100" },
+      STAFF: { textKey: "detailPages.accordionLabels.procedures.typeValues.STAFF", fallback: "Staff", className: "text-blue-700 bg-blue-100" },
+      PROPERTY: { textKey: "detailPages.accordionLabels.procedures.typeValues.PROPERTY", fallback: "Property", className: "text-green-700 bg-green-100" },
+      COMPANY: { textKey: "detailPages.accordionLabels.procedures.typeValues.COMPANY", fallback: "Company", className: "text-purple-700 bg-purple-100" },
     }),
     []
   );
 
   const documentStatusMap = useMemo(
     () => ({
-      ACTIVE: { text: "Active", className: "text-green-700 bg-green-100" },
-      EXPIRED: { text: "Expired", className: "text-red-700 bg-red-100" },
+      ACTIVE: { textKey: "detailPages.accordionLabels.procedures.statusValues.ACTIVE", fallback: "Active", className: "text-green-700 bg-green-100" },
+      EXPIRED: { textKey: "detailPages.accordionLabels.procedures.statusValues.EXPIRED", fallback: "Expired", className: "text-red-700 bg-red-100" },
       TERMINATED: {
-        text: "Terminated",
+        textKey: "detailPages.accordionLabels.procedures.statusValues.TERMINATED",
+        fallback: "Terminated",
         className: "text-gray-700 bg-gray-100",
       },
     }),
@@ -119,50 +123,38 @@ export const useOptimizedStatusFormatting = () => {
 
   const formatConditionStatus = useCallback(
     (status: string) => {
-      return (
-        conditionStatusMap[status as keyof typeof conditionStatusMap] || {
-          text: status,
-          className: "text-gray-700 bg-gray-100",
-        }
-      );
+      const entry = conditionStatusMap[status as keyof typeof conditionStatusMap];
+      if (!entry) return { text: status, className: "text-gray-700 bg-gray-100" };
+      return { text: t ? t(entry.textKey as Parameters<typeof t>[0]) : entry.fallback, className: entry.className };
     },
-    [conditionStatusMap]
+    [conditionStatusMap, t]
   );
 
   const formatInteractionMeans = useCallback(
     (means: string) => {
-      return (
-        interactionMeansMap[means as keyof typeof interactionMeansMap] || {
-          text: means,
-          className: "text-gray-700 bg-gray-100",
-        }
-      );
+      const entry = interactionMeansMap[means as keyof typeof interactionMeansMap];
+      if (!entry) return { text: means, className: "text-gray-700 bg-gray-100" };
+      return { text: t ? t(entry.textKey as Parameters<typeof t>[0]) : entry.fallback, className: entry.className };
     },
-    [interactionMeansMap]
+    [interactionMeansMap, t]
   );
 
   const formatDocumentType = useCallback(
     (type: string) => {
-      return (
-        documentTypeMap[type as keyof typeof documentTypeMap] || {
-          text: type,
-          className: "text-gray-700 bg-gray-100",
-        }
-      );
+      const entry = documentTypeMap[type as keyof typeof documentTypeMap];
+      if (!entry) return { text: type, className: "text-gray-700 bg-gray-100" };
+      return { text: t ? t(entry.textKey as Parameters<typeof t>[0]) : entry.fallback, className: entry.className };
     },
-    [documentTypeMap]
+    [documentTypeMap, t]
   );
 
   const formatDocumentStatus = useCallback(
     (status: string) => {
-      return (
-        documentStatusMap[status as keyof typeof documentStatusMap] || {
-          text: status,
-          className: "text-gray-700 bg-gray-100",
-        }
-      );
+      const entry = documentStatusMap[status as keyof typeof documentStatusMap];
+      if (!entry) return { text: status, className: "text-gray-700 bg-gray-100" };
+      return { text: t ? t(entry.textKey as Parameters<typeof t>[0]) : entry.fallback, className: entry.className };
     },
-    [documentStatusMap]
+    [documentStatusMap, t]
   );
 
   return {

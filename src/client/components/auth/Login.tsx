@@ -15,6 +15,13 @@ export function Login() {
   const { login, isAuthenticated, isLoading, error, clearError } = useAuth();
   const { t } = useLanguage();
 
+  // Remove /login from URL
+  useEffect(() => {
+    if (window.location.pathname === '/login') {
+      window.history.replaceState({}, document.title, '/');
+    }
+  }, []);
+
   // Clear error when component mounts or inputs change
   useEffect(() => {
     if (error) {

@@ -121,9 +121,14 @@ app.use((req, res, next) => {
     }
   } else {
     // Development: allow all origins
+    // For Android Emulator (10.0.2.2), checking origin might fail if it's treated as null or similar
+    // Safest approach for dev is to reflect the origin or use *
     if (origin) {
       res.header("Access-Control-Allow-Origin", origin);
       res.header("Vary", "Origin");
+    } else {
+      // Allow requests with no origin (like mobile apps)
+      res.header("Access-Control-Allow-Origin", "*");
     }
   }
 
