@@ -207,9 +207,9 @@ export const PropertyNewPage: React.FC = () => {
             const newProperty = await propertyService.create(propertyDataNormalized as Omit<Property, "id" | "createdAt" | "updatedAt">);
 
             // Upload photo if one was selected
-            if (photoPreview && newProperty.id) {
+            if (_photoFile && newProperty.id) {
                 try {
-                    await propertyService.uploadPhoto(newProperty.id.toString(), photoPreview);
+                    await propertyService.uploadPhoto(newProperty.id.toString(), _photoFile);
                 } catch (photoError) {
                     console.error('Failed to upload photo:', photoError);
                     // Don't fail the entire operation if photo upload fails

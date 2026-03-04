@@ -2,10 +2,10 @@ import express from "express";
 import multer from "multer";
 import path from "path";
 import {
-  uploadBufferToS3,
-  deleteObjectFromS3,
-  keyFromUrlOrPath,
-} from "../lib/awsS3";
+  uploadBufferToDrive,
+  deleteFileFromDrive,
+  fileIdFromUrl,
+} from "../lib/googleDrive";
 import { v4 as uuidv4 } from "uuid";
 import { authenticateToken } from "../middleware/auth";
 import { validateRequest } from "../middleware/validation";
@@ -19,7 +19,7 @@ const router = express.Router();
 // Mount replies router
 router.use("/:id/replies", dailyRecordRepliesRouter);
 
-// Configure multer for daily record photo uploads (S3 memory storage)
+// Configure multer for daily record photo uploads (memory storage)
 const photoUpload = multer({
   storage: multer.memoryStorage(),
   limits: {
@@ -221,19 +221,19 @@ router.post(
         throw new NotFoundError("Daily record not found");
       }
 
-      // Delete old photo from S3 if it exists
+      // Delete old photo from Drive if it exists
       if (record.photo) {
-        const oldKey = keyFromUrlOrPath(record.photo);
-        await deleteObjectFromS3(oldKey).catch(() => {});
+        const oldId = fileIdFromUrl(record.photo);
+        if (oldId) await deleteFileFromDrive(oldId).catch(() => { });
       }
 
-      // Upload new photo to S3 and update record with URL
-      const ext = path.extname(req.file.originalname);
-      const key = `uploads/daily-records/daily-record-${Date.now()}-${uuidv4()}${ext}`;
-      const photoUrl = await uploadBufferToS3({
-        key,
+      // Upload new photo to Google Drive and update record with URL
+      const ext = path.extname(req.file.originalname) || ".jpg";
+      const filename = `daily-record-${Date.now()}-${uuidv4()}${ext}`;
+      const photoUrl = await uploadBufferToDrive({
         buffer: req.file.buffer,
         contentType: req.file.mimetype,
+        filename,
       });
       const updatedRecord = await dailyRecordService.updateDailyRecord(
         recordId,
@@ -255,6 +255,7 @@ router.post(
       if (error instanceof ValidationError || error instanceof NotFoundError) {
         throw error;
       }
+      // No local file cleanup needed with Google Drive memory uploads.
       res.status(500).json({
         success: false,
         message: "Failed to upload photo",
@@ -296,11 +297,13 @@ router.delete("/:id/photo", authenticateToken, async (req, res) => {
       });
     }
 
-    // Delete photo from S3
-    const key = keyFromUrlOrPath(record.photo);
-    await deleteObjectFromS3(key).catch(() => {
-      console.warn(`Failed to delete S3 object: ${key}`);
-    });
+    // Delete photo from Drive
+    const fileId = fileIdFromUrl(record.photo!);
+    if (fileId) {
+      await deleteFileFromDrive(fileId).catch(() => {
+        console.warn(`Failed to delete Drive file: ${fileId}`);
+      });
+    }
 
     // Update daily record to remove photo
     const updatedRecord = await dailyRecordService.updateDailyRecord(recordId, {

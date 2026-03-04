@@ -2,10 +2,10 @@ import express from "express";
 import multer from "multer";
 import path from "path";
 import {
-  uploadBufferToS3,
-  deleteObjectFromS3,
-  keyFromUrlOrPath,
-} from "../lib/awsS3";
+  uploadBufferToStorage as uploadBufferToDrive,
+  deleteFileFromStorage as deleteFileFromDrive,
+  fileKeyFromUrl as fileIdFromUrl,
+} from "../lib/cloudStorage";
 import { v4 as uuidv4 } from "uuid";
 import { Prisma } from "@prisma/client";
 import prisma from "../lib/prisma";
@@ -35,7 +35,7 @@ const calculateAge = (birthDate: Date): number => {
 
 const router = express.Router();
 
-// Configure multer for photo uploads (S3 memory storage)
+// Configure multer for photo uploads (memory storage)
 
 const photoUpload = multer({
   storage: multer.memoryStorage(),
@@ -414,19 +414,19 @@ router.post(
         throw new NotFoundError("Staff member not found");
       }
 
-      // Delete old photo from S3 if it exists
+      // Delete old photo from Drive if it exists
       if (staff.photo) {
-        const oldKey = keyFromUrlOrPath(staff.photo);
-        await deleteObjectFromS3(oldKey).catch(() => {});
+        const oldId = fileIdFromUrl(staff.photo);
+        if (oldId) await deleteFileFromDrive(oldId).catch(() => { });
       }
 
-      // Upload to S3 and update staff record with public URL
-      const ext = path.extname(req.file.originalname);
-      const key = `uploads/staff-photos/staff-${staffId}-${uuidv4()}${ext}`;
-      const photoUrl = await uploadBufferToS3({
-        key,
+      // Upload to Drive and update staff record with public URL
+      const ext = path.extname(req.file.originalname) || ".jpg";
+      const filename = `staff-${staffId}-${uuidv4()}${ext}`;
+      const photoUrl = await uploadBufferToDrive({
         buffer: req.file.buffer,
         contentType: req.file.mimetype,
+        filename,
       });
       await prisma.staff.update({
         where: { id: staffId },
@@ -441,7 +441,7 @@ router.post(
     } catch (error) {
       console.error("Error uploading staff photo:", error);
 
-      // No local file cleanup needed when using memoryStorage + S3.
+      // No local file cleanup needed with Google Drive memory uploads.
 
       if (error instanceof ValidationError || error instanceof NotFoundError) {
         throw error;
@@ -489,11 +489,13 @@ router.delete("/:id/photo", authenticateToken, async (req, res) => {
       });
     }
 
-    // Delete photo from S3
-    const key = keyFromUrlOrPath(staff.photo);
-    await deleteObjectFromS3(key).catch(() => {
-      console.warn(`Failed to delete S3 object: ${key}`);
-    });
+    // Delete photo from Drive
+    const fileId = fileIdFromUrl(staff.photo);
+    if (fileId) {
+      await deleteFileFromDrive(fileId).catch(() => {
+        console.warn(`Failed to delete Drive file: ${fileId}`);
+      });
+    }
 
     // Update staff record to remove photo
     await prisma.staff.update({
@@ -1112,12 +1114,14 @@ router.put(
               select: { photo: true },
             });
             if (existing && existing.photo) {
-              const existingKey = keyFromUrlOrPath(existing.photo);
-              await deleteObjectFromS3(existingKey).catch(() => {
-                console.warn(
-                  `Failed to delete existing staff photo from S3: ${existingKey}`
-                );
-              });
+              const existingId = fileIdFromUrl(existing.photo);
+              if (existingId) {
+                await deleteFileFromDrive(existingId).catch(() => {
+                  console.warn(
+                    `Failed to delete existing staff photo from Drive: ${existingId}`
+                  );
+                });
+              }
             }
           } catch (err) {
             console.warn(

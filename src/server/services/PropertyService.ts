@@ -7,10 +7,10 @@ import {
 import prisma from "../lib/prisma";
 import * as path from "path";
 import {
-  uploadBufferToS3,
-  deleteObjectFromS3,
-  keyFromUrlOrPath,
-} from "../lib/awsS3";
+  uploadBufferToDrive,
+  deleteFileFromDrive,
+  fileIdFromUrl,
+} from "../lib/googleDrive";
 import type { Express } from "express";
 
 export interface PropertyFilters {
@@ -773,29 +773,29 @@ export class PropertyService {
   }
 
   /**
-   * Upload property photo (S3)
+   * Upload property photo (Google Drive)
    */
   async uploadPropertyPhoto(
     propertyId: number,
     file: Express.Multer.File
   ): Promise<string> {
-    // Delete old photo from S3 if it exists
+    // Delete old photo from Drive if it exists
     const existing = await this.prisma.property.findUnique({
       where: { id: propertyId },
       select: { photo: true },
     });
     if (existing?.photo) {
-      const oldKey = keyFromUrlOrPath(existing.photo);
-      await deleteObjectFromS3(oldKey).catch(() => {});
+      const oldId = fileIdFromUrl(existing.photo);
+      if (oldId) await deleteFileFromDrive(oldId).catch(() => { });
     }
 
-    // Upload new photo to S3
+    // Upload new photo to Google Drive
     const fileExtension = path.extname(file.originalname) || "";
-    const key = `uploads/property-photos/property-${propertyId}-${Date.now()}${fileExtension}`;
-    const photoUrl = await uploadBufferToS3({
-      key,
+    const filename = `property-${propertyId}-${Date.now()}${fileExtension}`;
+    const photoUrl = await uploadBufferToDrive({
       buffer: file.buffer,
-      contentType: file.mimetype || "application/octet-stream",
+      contentType: file.mimetype || "image/jpeg",
+      filename,
     });
 
     // Update property record

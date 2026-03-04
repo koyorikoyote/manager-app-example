@@ -33,9 +33,8 @@ class CompanyService {
     if (params.page) searchParams.append("page", params.page.toString());
     if (params.limit) searchParams.append("limit", params.limit.toString());
 
-    const endpoint = `/companies${
-      searchParams.toString() ? `?${searchParams.toString()}` : ""
-    }`;
+    const endpoint = `/companies${searchParams.toString() ? `?${searchParams.toString()}` : ""
+      }`;
 
     const response = await apiClient.get<GetCompaniesResponse>(endpoint, { signal });
     // Backend returns data directly for list endpoint (no wrapper)
@@ -86,16 +85,15 @@ class CompanyService {
 
   // Photo upload functionality
   async uploadPhoto(
-    companyId: number,
+    _companyId: number,
     file: File
   ): Promise<{ photoUrl: string }> {
     const formData = new FormData();
     formData.append("photo", file);
 
-    // Get auth token from localStorage
     const token = localStorage.getItem("authToken");
 
-    const response = await fetch(`/api/companies/${companyId}/photo`, {
+    const response = await fetch("/api/upload/companies", {
       method: "POST",
       headers: {
         ...(token && { Authorization: `Bearer ${token}` }),
@@ -108,7 +106,7 @@ class CompanyService {
     }
 
     const result = await response.json();
-    return result.data;
+    return { photoUrl: result.filePath };
   }
 
   // Fetch interaction records for a company

@@ -186,12 +186,9 @@ export const PropertyDetailPage: React.FC = () => {
             setPhotoUploadLoading(true);
             setPhotoUploadError(null);
 
-            // For now, use a mock implementation since photo upload service doesn't exist yet
-            // In a real implementation, this would call propertyService.uploadPhoto(property.id, file)
-            const photoUrl = URL.createObjectURL(file);
+            const photoUrl = await propertyService.uploadPhoto(property.id.toString(), file);
 
-            // Only update form data during edit mode - don't update the original property state
-            // This ensures that canceling will revert to the original photo
+            setProperty(prev => prev ? { ...prev, photo: photoUrl } : null);
             setFormData(prev => ({ ...prev, photo: photoUrl }));
         } catch (error) {
             console.error('Photo upload failed:', error);

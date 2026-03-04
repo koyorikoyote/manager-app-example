@@ -2,16 +2,16 @@ import express from "express";
 import multer from "multer";
 import path from "path";
 import {
-  uploadBufferToS3,
-  deleteObjectFromS3,
-  keyFromUrlOrPath,
-} from "../lib/awsS3";
+  uploadBufferToDrive,
+  deleteFileFromDrive,
+  fileIdFromUrl,
+} from "../lib/googleDrive";
 import { documentsDb } from "../database/documents";
 import { authenticateToken } from "../middleware/auth";
 
 const router = express.Router();
 
-// Configure multer for file uploads to S3 (memory storage)
+// Configure multer for file uploads (memory storage)
 const storage = multer.memoryStorage();
 
 const upload = multer({
@@ -190,8 +190,8 @@ router.delete("/:id", async (req, res) => {
     // Get document to check if it has a file
     const document = await documentsDb.getById(id);
     if (document?.filePath) {
-      const key = keyFromUrlOrPath(document.filePath);
-      await deleteObjectFromS3(key).catch(() => {});
+      const fileId = fileIdFromUrl(document.filePath);
+      if (fileId) await deleteFileFromDrive(fileId).catch(() => { });
     }
 
     const deleted = await documentsDb.delete(id);
@@ -228,15 +228,13 @@ router.post("/:id/upload", upload.single("document"), async (req, res) => {
       });
     }
 
-    // Upload PDF to S3 and update document with public URL
+    // Upload PDF to Google Drive and update document with public URL
     const ext = path.extname(req.file.originalname) || ".pdf";
-    const key = `uploads/documents/document-${Date.now()}-${Math.round(
-      Math.random() * 1e9
-    )}${ext}`;
-    const fileUrl = await uploadBufferToS3({
-      key,
+    const filename = `document-${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`;
+    const fileUrl = await uploadBufferToDrive({
       buffer: req.file.buffer,
       contentType: req.file.mimetype || "application/pdf",
+      filename,
     });
 
     const document = await documentsDb.update(id, { filePath: fileUrl });
@@ -261,7 +259,7 @@ router.post("/:id/upload", upload.single("document"), async (req, res) => {
   }
 });
 
-// GET /api/documents/files/:filePath - Legacy local serving removed (S3 used now)
+// GET /api/documents/files/:filePath - Legacy local serving removed (Drive used now)
 router.get("/files/:filename", (_req, res) => {
   return res.status(404).json({
     success: false,

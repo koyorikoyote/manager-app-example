@@ -1,12 +1,15 @@
 import express from "express";
 import multer from "multer";
 import path from "path";
-import { uploadBufferToS3, deleteObjectFromS3 } from "../lib/awsS3";
+import {
+  uploadBufferToStorage as uploadBufferToDrive,
+  deleteFileFromStorage as deleteFileFromDrive,
+  fileKeyFromUrl as fileIdFromUrl,
+} from "../lib/cloudStorage";
 import { authenticateToken } from "../middleware/auth";
 
 const router = express.Router();
 
-// Configure multer for file uploads to S3 (memory storage)
 const storage = multer.memoryStorage();
 
 const upload = multer({
@@ -15,7 +18,6 @@ const upload = multer({
     fileSize: 5 * 1024 * 1024, // 5MB limit
   },
   fileFilter: (req, file, cb) => {
-    // Check file type
     const allowedTypes = /jpeg|jpg|png|webp/;
     const extname = allowedTypes.test(
       path.extname(file.originalname).toLowerCase()
@@ -44,16 +46,13 @@ router.post(
         });
       }
 
-      // Upload buffer to S3 and return public URL
-      const ext = path.extname(req.file.originalname);
-      const key = `uploads/daily-records/daily-record-${Date.now()}-${Math.round(
-        Math.random() * 1e9
-      )}${ext}`;
+      const ext = path.extname(req.file.originalname) || ".jpg";
+      const filename = `daily-record-${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`;
 
-      const fileUrl = await uploadBufferToS3({
-        key,
+      const fileUrl = await uploadBufferToDrive({
         buffer: req.file.buffer,
         contentType: req.file.mimetype,
+        filename,
       });
 
       res.json({
@@ -78,13 +77,7 @@ router.delete(
   async (req, res) => {
     try {
       const filename = decodeURIComponent(req.params.filename);
-
-      // Extract just the filename from the path if it's a full path
-      const actualFilename = path.basename(filename);
-      const key = `uploads/daily-records/${actualFilename}`;
-
-      // Attempt to delete from S3 (idempotent)
-      await deleteObjectFromS3(key).catch(() => {});
+      await deleteFileFromDrive(fileIdFromUrl(filename) ?? filename).catch(() => { });
 
       res.json({
         success: true,
@@ -96,6 +89,62 @@ router.delete(
         success: false,
         message: "Failed to delete photo",
       });
+    }
+  }
+);
+
+// POST /api/upload/companies - Upload photo for company/destination
+router.post(
+  "/companies",
+  authenticateToken,
+  upload.single("photo"),
+  async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ success: false, message: "No file uploaded" });
+      }
+
+      const ext = path.extname(req.file.originalname) || ".jpg";
+      const filename = `company-${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`;
+
+      const fileUrl = await uploadBufferToDrive({
+        buffer: req.file.buffer,
+        contentType: req.file.mimetype,
+        filename,
+      });
+
+      res.json({ success: true, filePath: fileUrl, message: "Photo uploaded successfully" });
+    } catch (error) {
+      console.error("Error uploading company photo:", error);
+      res.status(500).json({ success: false, message: "Failed to upload photo" });
+    }
+  }
+);
+
+// POST /api/upload/properties - Upload photo for property
+router.post(
+  "/properties",
+  authenticateToken,
+  upload.single("photo"),
+  async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ success: false, message: "No file uploaded" });
+      }
+
+      const ext = path.extname(req.file.originalname) || ".jpg";
+      const filename = `property-${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`;
+
+      const fileUrl = await uploadBufferToDrive({
+        buffer: req.file.buffer,
+        contentType: req.file.mimetype,
+        filename,
+      });
+
+      res.json({ success: true, filePath: fileUrl, message: "Photo uploaded successfully" });
+    } catch (error) {
+      console.error("Error uploading property photo:", error);
+      res.status(500).json({ success: false, message: "Failed to upload photo" });
     }
   }
 );

@@ -28,9 +28,8 @@ export const generatePhotoFilename = (
   const ext = extension || path.extname(originalFilename).toLowerCase();
   const finalExt = ext.startsWith(".") ? ext.substring(1) : ext;
 
-  return `${prefix}-${timestamp}-${uniqueId}${
-    sanitizedName ? `-${sanitizedName}` : ""
-  }.${finalExt}`;
+  return `${prefix}-${timestamp}-${uniqueId}${sanitizedName ? `-${sanitizedName}` : ""
+    }.${finalExt}`;
 };
 
 /**
@@ -61,11 +60,10 @@ export const processPhotoFile = async (
     // Clean up output file if it was created
     try {
       await fs.unlink(outputPath);
-    } catch {}
+    } catch { }
 
     throw new Error(
-      `Photo processing failed: ${
-        error instanceof Error ? error.message : "Unknown error"
+      `Photo processing failed: ${error instanceof Error ? error.message : "Unknown error"
       }`
     );
   }
@@ -171,8 +169,7 @@ export const cleanupOrphanedPhotos = async (
           deleted.push(file);
         } catch (error) {
           errors.push(
-            `Failed to delete ${file}: ${
-              error instanceof Error ? error.message : "Unknown error"
+            `Failed to delete ${file}: ${error instanceof Error ? error.message : "Unknown error"
             }`
           );
         }
@@ -180,8 +177,7 @@ export const cleanupOrphanedPhotos = async (
     }
   } catch (error) {
     errors.push(
-      `Failed to cleanup directory ${directory}: ${
-        error instanceof Error ? error.message : "Unknown error"
+      `Failed to cleanup directory ${directory}: ${error instanceof Error ? error.message : "Unknown error"
       }`
     );
   }
@@ -243,9 +239,8 @@ export const validateImageFile = async (
   } catch (error) {
     return {
       isValid: false,
-      error: `Failed to validate file: ${
-        error instanceof Error ? error.message : "Unknown error"
-      }`,
+      error: `Failed to validate file: ${error instanceof Error ? error.message : "Unknown error"
+        }`,
     };
   }
 };
@@ -306,14 +301,13 @@ export const moveUploadedFile = async (
     // Clean up files on error
     try {
       await fs.unlink(tempPath);
-    } catch {}
+    } catch { }
     try {
       await fs.unlink(permanentPath);
-    } catch {}
+    } catch { }
 
     throw new Error(
-      `Failed to move uploaded file: ${
-        error instanceof Error ? error.message : "Unknown error"
+      `Failed to move uploaded file: ${error instanceof Error ? error.message : "Unknown error"
       }`
     );
   }

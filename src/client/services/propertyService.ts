@@ -168,18 +168,27 @@ export const propertyService = {
 
   // Upload property photo
   uploadPhoto: async (
-    propertyId: string,
-    photoUrl: string
-  ): Promise<Property> => {
-    const result = await apiClient.post<Property>(
-      `/properties/${propertyId}/photo`,
-      { photoUrl }
-    );
+    _propertyId: string,
+    file: File
+  ): Promise<string> => {
+    const formData = new FormData();
+    formData.append("photo", file);
 
-    if (!result.data) {
+    const token = localStorage.getItem("authToken");
+
+    const response = await fetch("/api/upload/properties", {
+      method: "POST",
+      headers: {
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+      body: formData,
+    });
+
+    if (!response.ok) {
       throw new Error("Failed to upload property photo");
     }
 
-    return result.data;
+    const result = await response.json();
+    return result.filePath as string;
   },
 };

@@ -4,10 +4,10 @@ import { z } from "zod";
 import multer from "multer";
 import path from "path";
 import {
-  uploadBufferToS3,
-  deleteObjectFromS3,
-  keyFromUrlOrPath,
-} from "../lib/awsS3";
+  uploadBufferToDrive,
+  deleteFileFromDrive,
+  fileIdFromUrl,
+} from "../lib/googleDrive";
 import { v4 as uuidv4 } from "uuid";
 import { authenticateToken } from "../middleware/auth";
 import companyService from "../services/CompanyService";
@@ -15,7 +15,7 @@ import companyService from "../services/CompanyService";
 const router = Router();
 const prisma = new PrismaClient();
 
-// Configure multer for company photo uploads (S3 memory storage)
+// Configure multer for company photo uploads (memory storage)
 
 const photoUpload = multer({
   storage: multer.memoryStorage(),
@@ -799,21 +799,23 @@ router.post(
         });
       }
 
-      // Delete old photo from S3 if it exists
+      // Delete old photo from Drive if it exists
       if (company.photo) {
-        const oldKey = keyFromUrlOrPath(company.photo);
-        await deleteObjectFromS3(oldKey).catch(() => {
-          console.warn(`Failed to delete old company photo in S3: ${oldKey}`);
-        });
+        const oldId = fileIdFromUrl(company.photo);
+        if (oldId) {
+          await deleteFileFromDrive(oldId).catch(() => {
+            console.warn(`Failed to delete old company photo in Drive: ${oldId}`);
+          });
+        }
       }
 
-      // Upload to S3 and update company with public URL
-      const ext = path.extname(req.file.originalname);
-      const key = `uploads/company-photos/company-${companyId}-${uuidv4()}${ext}`;
-      const photoUrl = await uploadBufferToS3({
-        key,
+      // Upload to Google Drive and update company with public URL
+      const ext = path.extname(req.file.originalname) || ".jpg";
+      const filename = `company-${companyId}-${uuidv4()}${ext}`;
+      const photoUrl = await uploadBufferToDrive({
         buffer: req.file.buffer,
         contentType: req.file.mimetype,
+        filename,
       });
       const updatedCompany = await companyService.updateCompanyPhoto(
         companyId,
@@ -832,7 +834,7 @@ router.post(
     } catch (error) {
       console.error("Error uploading company photo:", error);
 
-      // No local cleanup needed when using memoryStorage + S3.
+      // No local cleanup needed with Google Drive memory uploads.
 
       if (error instanceof Error && error.message.includes("P2025")) {
         return res.status(404).json({
@@ -980,11 +982,13 @@ router.delete("/:id/photo", authenticateToken, async (req, res) => {
       });
     }
 
-    // Delete photo from S3
-    const key = keyFromUrlOrPath(company.photo);
-    await deleteObjectFromS3(key).catch(() => {
-      console.warn(`Failed to delete S3 object: ${key}`);
-    });
+    // Delete photo from Drive
+    const fileId = fileIdFromUrl(company.photo);
+    if (fileId) {
+      await deleteFileFromDrive(fileId).catch(() => {
+        console.warn(`Failed to delete Drive file: ${fileId}`);
+      });
+    }
 
     // Update company record to remove photo
     await companyService.updateCompanyPhoto(id, null);

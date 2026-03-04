@@ -27,7 +27,6 @@ import {
     validateEmailAddress,
     validatePhoneNumber,
     validateHiringVacancies,
-    PHOTO_UPLOAD_ERROR_MESSAGES
 } from '../../../shared/validation/companyValidationUtils';
 import { Company } from '../../../shared/types';
 
@@ -313,70 +312,17 @@ export const DestinationDetailPage: React.FC = () => {
             setPhotoUploadLoading(true);
             setPhotoUploadError(null);
 
-            // Validate file before upload
-            const maxSize = 5 * 1024 * 1024; // 5MB
-            const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+            const { photoUrl } = await companyService.uploadPhoto(parseInt(id), file);
 
-            if (file.size > maxSize) {
-                throw new Error('File size must be less than 5MB');
-            }
-
-            if (!allowedTypes.includes(file.type)) {
-                throw new Error('Please upload a JPEG, PNG, or WebP image');
-            }
-
-            // Check if file name is valid
-            if (!/^[a-zA-Z0-9._-]+$/.test(file.name)) {
-                throw new Error('File name contains invalid characters');
-            }
-
-            // Simulate network request with potential failure
-            await new Promise((resolve, reject) => {
-                setTimeout(() => {
-                    // Simulate random network errors for testing
-                    if (Math.random() < 0.1) { // 10% chance of network error
-                        reject(new Error('Network error. Please check your connection.'));
-                    } else {
-                        resolve(undefined);
-                    }
-                }, 1000);
-            });
-
-            // Update form data with new photo path
-            const photoPath = `/uploads/companies/${id}/${file.name}`;
-            handleFieldChange('photo', photoPath);
-
-            console.log('Photo uploaded successfully:', file.name);
+            setDestination(prev => prev ? { ...prev, photo: photoUrl } : null);
+            setFormData(prev => ({ ...prev, photo: photoUrl }));
         } catch (err) {
             console.error('Failed to upload photo:', err);
-
-            // Set user-friendly error messages using predefined constants (translation keys)
-            let errorMessage = PHOTO_UPLOAD_ERROR_MESSAGES.UPLOAD_FAILED;
-
-            if (err instanceof Error) {
-                const message = err.message.toLowerCase();
-                if (message.includes('network') || message.includes('connection')) {
-                    errorMessage = PHOTO_UPLOAD_ERROR_MESSAGES.NETWORK_ERROR;
-                } else if (message.includes('size')) {
-                    errorMessage = PHOTO_UPLOAD_ERROR_MESSAGES.FILE_TOO_LARGE;
-                } else if (message.includes('format') || message.includes('type')) {
-                    errorMessage = PHOTO_UPLOAD_ERROR_MESSAGES.INVALID_FORMAT;
-                } else if (message.includes('invalid characters')) {
-                    errorMessage = PHOTO_UPLOAD_ERROR_MESSAGES.INVALID_FILENAME;
-                } else if (message.includes('corrupted')) {
-                    errorMessage = PHOTO_UPLOAD_ERROR_MESSAGES.CORRUPTED_FILE;
-                } else if (message.includes('server')) {
-                    errorMessage = PHOTO_UPLOAD_ERROR_MESSAGES.SERVER_ERROR;
-                } else {
-                    errorMessage = err.message;
-                }
-            }
-
-            setPhotoUploadError(translateValidationError(errorMessage));
+            setPhotoUploadError(err instanceof Error ? err.message : 'Failed to upload photo');
         } finally {
             setPhotoUploadLoading(false);
         }
-    }, [id, handleFieldChange, translateValidationError]);
+    }, [id]);
 
     // Comprehensive form validation using FormValidator and enhanced utilities
     const validateForm = (): boolean => {

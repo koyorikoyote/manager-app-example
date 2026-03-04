@@ -1,24 +1,30 @@
 import express from "express";
+import multer from "multer";
 import { authenticateMobile } from "../../middleware/authMobile";
-import { getPresignedPutUrl } from "../../lib/awsS3";
+import { uploadBufferToStorage as uploadBufferToDrive } from "../../lib/cloudStorage";
 import { z } from "zod";
 
 const router = express.Router();
 
-// Zod schema and content-type allowlist
 const ALLOWED_MIME_PREFIXES = ["image/", "video/"];
 const ALLOWED_MIME_EXACT = ["application/pdf"];
 
-const PresignBodySchema = z.object({
-  contentType: z
-    .string()
-    .min(1)
-    .refine(
-      (ct) =>
-        ALLOWED_MIME_PREFIXES.some((p) => ct.startsWith(p)) ||
-        ALLOWED_MIME_EXACT.includes(ct),
-      { message: "Unsupported contentType" }
-    ),
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 20 * 1024 * 1024 }, // 20MB limit
+  fileFilter: (req, file, cb) => {
+    const allowed =
+      ALLOWED_MIME_PREFIXES.some((p) => file.mimetype.startsWith(p)) ||
+      ALLOWED_MIME_EXACT.includes(file.mimetype);
+    if (allowed) {
+      cb(null, true);
+    } else {
+      cb(new Error("Unsupported file type"));
+    }
+  },
+});
+
+const UploadBodySchema = z.object({
   scope: z.enum(["submission", "comment"]).optional(),
   refId: z
     .preprocess(
@@ -31,45 +37,50 @@ const PresignBodySchema = z.object({
 
 /**
  * POST /api/mobile/uploads/presign
- * Body: { contentType: string, scope?: "submission"|"comment", refId?: number, keyHint?: string }
- * Returns: { success, data: { url, key, headers, publicUrl } }
+ * Now a direct server-side upload (Google Drive has no presign equivalent).
+ * Body: multipart/form-data with 'file' field + optional scope/refId/keyHint fields.
+ * Returns: { success, data: { publicUrl, key } }
  */
-router.post("/presign", authenticateMobile, async (req, res) => {
+router.post("/presign", authenticateMobile, upload.single("file"), async (req, res) => {
   try {
-    const mobileUser = (req as any).mobileUser as { id: number };
-    const { contentType, scope, refId, keyHint } = PresignBodySchema.parse(req.body ?? {});
+    const mobileUser = (req as unknown as { mobileUser: { id: number } }).mobileUser;
 
-    // Build a safe uploads key under uploads/mobile/<userId>/...
-    const basePrefix = `uploads/mobile/${mobileUser.id}`;
+    if (!req.file) {
+      return res.status(400).json({ success: false, error: "No file provided" });
+    }
+
+    const bodyParsed = UploadBodySchema.safeParse(req.body ?? {});
+    const { scope, refId, keyHint } = bodyParsed.success ? bodyParsed.data : {};
+
+    const safeScope = scope === "comment" ? "comments" : "submissions";
+    const hint =
+      typeof keyHint === "string" && keyHint.trim().length > 0
+        ? `-${keyHint.trim().replace(/[^a-zA-Z0-9-_]/g, "")}`
+        : "";
     const now = Date.now();
     const random = Math.floor(Math.random() * 1e9);
-    const safeScope = scope === "comment" ? "comments" : "submissions";
-    const hint = typeof keyHint === "string" && keyHint.trim().length > 0 ? `-${keyHint.trim().replace(/[^a-zA-Z0-9-_]/g, "")}` : "";
-    const extension = (() => {
-      if (contentType.startsWith("image/")) return ".img";
-      if (contentType.startsWith("video/")) return ".vid";
-      if (contentType === "application/pdf") return ".pdf";
-      return "";
-    })();
+    const ext = req.file.originalname.split(".").pop() || "bin";
+    const filename = `mobile-${mobileUser.id}/${safeScope}/${refId ? `${refId}/` : ""}${now}-${random}${hint}.${ext}`;
 
-    const key = `${basePrefix}/${safeScope}/${refId ? `${refId}/` : ""}${now}-${random}${hint}${extension}`;
-
-    const presign = await getPresignedPutUrl({
-      key,
-      contentType,
-      expiresIn: 300, // 5 minutes
+    const publicUrl = await uploadBufferToDrive({
+      buffer: req.file.buffer,
+      contentType: req.file.mimetype,
+      filename,
     });
 
     return res.json({
       success: true,
-      data: presign,
+      data: {
+        publicUrl,
+        key: filename,
+      },
     });
   } catch (err) {
     if (err instanceof z.ZodError) {
       return res.status(400).json({ success: false, error: "Invalid request", details: err.issues });
     }
-    console.error("Presign upload error:", err);
-    return res.status(500).json({ success: false, error: "Failed to generate pre-signed URL" });
+    console.error("Upload error:", err);
+    return res.status(500).json({ success: false, error: "Failed to upload file" });
   }
 });
 
