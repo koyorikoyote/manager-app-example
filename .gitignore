@@ -66,3 +66,6 @@ uploads/staff-photos/*
 uploads/daily-records/*
 uploads/company-photos/*
 uploads/*
+
+# Google service account
+config/google-service-account.json

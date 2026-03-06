@@ -126,7 +126,7 @@ export const dailyRecordEnhancedSchemas = {
     }),
     feedbackContent: z
       .string()
-      .min(10, "Feedback content must be at least 10 characters")
+      .min(2, "Feedback content must be at least 2 characters")
       .max(1000, "Feedback content must be 1000 characters or less"),
     contactNumber: z
       .string()
@@ -167,7 +167,7 @@ export const dailyRecordEnhancedSchemas = {
       .optional(),
     feedbackContent: z
       .string()
-      .min(10, "Feedback content must be at least 10 characters")
+      .min(2, "Feedback content must be at least 2 characters")
       .max(1000, "Feedback content must be 1000 characters or less")
       .optional(),
     contactNumber: z

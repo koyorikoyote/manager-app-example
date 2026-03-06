@@ -199,7 +199,7 @@ export const DAILY_RECORD_VALIDATION_SCHEMA: FieldValidationConfig[] = [
     type: "textarea",
     rules: {
       required: true,
-      minLength: 10,
+      minLength: 2,
       maxLength: 1000,
     },
   },

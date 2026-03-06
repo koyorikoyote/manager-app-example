@@ -102,6 +102,8 @@ app.use((req, res, next) => {
       "capacitor://", // Capacitor apps
       "ionic://", // Ionic apps
       "file://", // Nativefier bundled .exe apps
+      "https://dispatch-manager-prod.web.app", // Production Firebase Hosting
+      "https://dispatch-manager-prod.firebaseapp.com", // Production Firebase Hosting
     ];
 
     // Check if origin matches allowed patterns

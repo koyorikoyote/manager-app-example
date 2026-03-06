@@ -152,7 +152,7 @@ export class DailyRecordService {
           },
         },
       },
-      orderBy: [{ dateOfRecord: "desc" }, { id: "desc" }],
+      orderBy: [{ dateOfRecord: "desc" }, { updatedAt: "desc" }, { id: "desc" }],
     });
 
     return dailyRecords.map((record) => this.transformDailyRecord(record));
@@ -432,7 +432,7 @@ export class DailyRecordService {
           },
         },
       },
-      orderBy: [{ dateOfRecord: "desc" }, { id: "desc" }],
+      orderBy: [{ dateOfRecord: "desc" }, { updatedAt: "desc" }, { id: "desc" }],
     });
 
     return dailyRecords.map((record) => this.transformDailyRecord(record));

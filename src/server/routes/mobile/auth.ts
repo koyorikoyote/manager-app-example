@@ -5,6 +5,8 @@ import {
   signMobileAccessToken,
   verifyMobileToken,
   comparePassword,
+  authenticateMobile,
+  hashPassword,
 } from "../../middleware/authMobile";
 import { toJSTISOString } from "../../../shared/utils/jstDateUtils";
 
@@ -28,7 +30,7 @@ router.post("/login", async (req, res) => {
       });
     }
 
-    const mobileUser = await (prisma as any).mobileUser.findFirst({
+    const mobileUser = await prisma.mobileUser.findFirst({
       where: {
         isActive: true,
         OR: [{ email: emailInput }, { username: emailInput }],
@@ -52,7 +54,7 @@ router.post("/login", async (req, res) => {
 
     // Resolve role from new mobile_user_roles (fallback to User/level 1)
     const roleRec = mobileUser.mobileRoleId
-      ? await (prisma as any).mobileUserRole.findUnique({
+      ? await prisma.mobileUserRole.findUnique({
         where: { id: mobileUser.mobileRoleId },
         select: { name: true, level: true },
       })
@@ -93,7 +95,7 @@ router.post("/login", async (req, res) => {
 
     const refreshExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
-    await (prisma as any).mobileRefreshToken.create({
+    await prisma.mobileRefreshToken.create({
       data: {
         userId: mobileUser.id,
         tokenHash: refreshTokenHash,
@@ -114,7 +116,7 @@ router.post("/login", async (req, res) => {
         expiresAt,
       },
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Mobile login error:", err);
     const isDev = process.env.NODE_ENV !== "production";
     const details = isDev
@@ -154,7 +156,7 @@ router.post("/refresh", async (req, res) => {
       .update(refreshToken)
       .digest("hex");
 
-    const storedToken = await (prisma as any).mobileRefreshToken.findFirst({
+    const storedToken = await prisma.mobileRefreshToken.findFirst({
       where: {
         tokenHash,
         revokedAt: null,
@@ -172,7 +174,7 @@ router.post("/refresh", async (req, res) => {
 
     if (new Date() > storedToken.expiresAt) {
       // Clean up expired token
-      await (prisma as any).mobileRefreshToken.delete({
+      await prisma.mobileRefreshToken.delete({
         where: { id: storedToken.id },
       });
       return res
@@ -190,7 +192,7 @@ router.post("/refresh", async (req, res) => {
 
     // Resolve role from new mobile_user_roles (fallback to User/level 1)
     const roleRec = mobileUser.mobileRoleId
-      ? await (prisma as any).mobileUserRole.findUnique({
+      ? await prisma.mobileUserRole.findUnique({
         where: { id: mobileUser.mobileRoleId },
         select: { name: true, level: true },
       })
@@ -221,7 +223,7 @@ router.post("/refresh", async (req, res) => {
     const expiresAt = toJSTISOString(new Date(Date.now() + 15 * 60 * 1000));
 
     // Rotate the refresh token: Delete old, create new
-    await (prisma as any).mobileRefreshToken.delete({
+    await prisma.mobileRefreshToken.delete({
       where: { id: storedToken.id },
     });
 
@@ -233,7 +235,7 @@ router.post("/refresh", async (req, res) => {
 
     const refreshExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
-    await (prisma as any).mobileRefreshToken.create({
+    await prisma.mobileRefreshToken.create({
       data: {
         userId: mobileUser.id,
         tokenHash: newRefreshTokenHash,
@@ -254,7 +256,7 @@ router.post("/refresh", async (req, res) => {
         expiresAt,
       },
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Mobile refresh error:", err);
     const isDev = process.env.NODE_ENV !== "production";
     const details = isDev
@@ -275,6 +277,51 @@ router.post("/refresh", async (req, res) => {
 });
 
 /**
+ * POST /api/mobile/auth/change-password
+ * Body: { currentPassword: string, newPassword: string }
+ */
+router.post("/change-password", authenticateMobile, async (req, res) => {
+  try {
+    const mobileUser = (req as express.Request & { mobileUser: { id: number } }).mobileUser;
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ success: false, error: "Missing required fields" });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ success: false, error: "New password must be at least 6 characters" });
+    }
+
+    // Find full user record to verify current password
+    const userRecord = await prisma.mobileUser.findUnique({
+      where: { id: mobileUser.id },
+    });
+
+    if (!userRecord) {
+      return res.status(404).json({ success: false, error: "User not found" });
+    }
+
+    const isMatch = await comparePassword(currentPassword, userRecord.passwordHash);
+    if (!isMatch) {
+      return res.status(400).json({ success: false, error: "Incorrect current password" });
+    }
+
+    // Update password
+    const hashedNewPassword = await hashPassword(newPassword);
+    await prisma.mobileUser.update({
+      where: { id: mobileUser.id },
+      data: { passwordHash: hashedNewPassword },
+    });
+
+    return res.json({ success: true, message: "Password updated successfully" });
+  } catch (error) {
+    console.error("Change password error:", error);
+    return res.status(500).json({ success: false, error: "Failed to change password" });
+  }
+});
+
+/**
  * POST /api/mobile/auth/logout
  * Body: { refreshToken?: string }
  */
@@ -287,7 +334,7 @@ router.post("/logout", async (req, res) => {
         .update(refreshToken)
         .digest("hex");
 
-      await (prisma as any).mobileRefreshToken.deleteMany({
+      await prisma.mobileRefreshToken.deleteMany({
         where: { tokenHash },
       });
     } catch (e) {
@@ -312,7 +359,7 @@ router.get("/me", async (req, res) => {
         .json({ success: false, error: "Access token required" });
     }
     const decoded = verifyMobileToken(token);
-    const mobileUser = await (prisma as any).mobileUser.findFirst({
+    const mobileUser = await prisma.mobileUser.findFirst({
       where: { id: decoded.sub, isActive: true },
       select: {
         id: true,
